@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html" charset="utf-8" />
+    <title>Webpack TypeScript BabylonJS Starter</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background-color: #000;
+        position: relative;
+        font-family: Helvetica, Arial, sans-serif;
+      }
+
+      #renderCanvas {
+        width: 100vw;
+        height: 100vh;
+        touch-action: none;
+      }
+
+      #blocker {
+        overflow: hidden;
+        position: absolute;
+        z-index: 99;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: #00000080;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        pointer-events: none;
+      }
+
+      #landing-cta {
+        color: white;
+        text-align: center;
+      }
+
+      #subvirtual {
+        position: relative;
+        width: 100%;
+        height: 100%;
+      }
+
+      .noselect {
+        -webkit-touch-callout: none; /* iOS Safari */
+        -webkit-user-select: none; /* Safari */
+        -khtml-user-select: none; /* Konqueror HTML */
+        -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+        user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
+      }
+    </style>
+  </head>
+  <body>
+    <div id="subvirtual">
+      <div id="blocker" class="noselect">
+        <div id="landing-cta">
+          <img alt="origin-logo" src="assets/img/origin.svg" />
+          <span>
+            <h1>ORIGIN (VIRTUAL)</h1>
+            <h3>Click to begin</h3>
+          </span>
+        </div>
+      </div>
+      <canvas id="renderCanvas"></canvas>
+    </div>
+  </body>
+</html>

@@ -1,67 +1,11 @@
 import * as BABYLON from "babylonjs";
 import "babylonjs-loaders";
+import { getGhostMaterial } from "./ghost-material";
+import { initPointerLock } from "./pointer-lock";
 
 const canvas = document.getElementById("renderCanvas") as HTMLCanvasElement; // Get the canvas element
 const blocker = document.getElementById("blocker") as HTMLDivElement;
 const engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
-
-const initPointerLock = (
-  canvas: HTMLCanvasElement,
-  camera: BABYLON.UniversalCamera
-) => {
-  // On click event, request pointer lock
-  canvas.addEventListener(
-    "click",
-    () => {
-      // @ts-ignore
-      blocker.display = "none";
-      canvas.requestPointerLock =
-        canvas.requestPointerLock ||
-        canvas.msRequestPointerLock ||
-        canvas.mozRequestPointerLock ||
-        canvas.webkitRequestPointerLock;
-      if (canvas.requestPointerLock) {
-        canvas.requestPointerLock();
-      }
-    },
-    false
-  );
-
-  canvas.addEventListener("touchstart", () => {
-    blocker.style.display = "none";
-  });
-
-  // Event listener when the pointerlock is updated (or removed by pressing ESC for example).
-  const pointerlockchange = () => {
-    const controlEnabled =
-      // @ts-ignore
-      document.mozPointerLockElement === canvas ||
-      // @ts-ignore
-      document.webkitPointerLockElement === canvas ||
-      // @ts-ignore
-      document.msPointerLockElement === canvas ||
-      document.pointerLockElement === canvas;
-
-    // If the user is already locked
-    if (!controlEnabled) {
-      camera.detachControl(canvas);
-      blocker.style.display = "flex";
-    } else {
-      camera.attachControl(canvas);
-      blocker.style.display = "none";
-    }
-  };
-
-  // Attach events to the document
-  document.addEventListener("pointerlockchange", pointerlockchange, false);
-  document.addEventListener("mspointerlockchange", pointerlockchange, false);
-  document.addEventListener("mozpointerlockchange", pointerlockchange, false);
-  document.addEventListener(
-    "webkitpointerlockchange",
-    pointerlockchange,
-    false
-  );
-};
 
 const setupCamera = (scene: BABYLON.Scene) => {
   // This creates and positions a free camera (non-mesh)
@@ -73,7 +17,9 @@ const setupCamera = (scene: BABYLON.Scene) => {
   camera.minZ = 0.1;
   camera.position.set(0.64, 1.25, 9.98);
   camera.rotation.set(0, -3.13, 0);
-  initPointerLock(engine.getRenderingCanvas(), camera);
+  initPointerLock(engine.getRenderingCanvas(), camera, blocker);
+
+  // camera.fov = 2.024;
 
   // This targets the camera to scene origin
   camera.setTarget(new BABYLON.Vector3(0, 1, 0));
@@ -83,7 +29,7 @@ const setupCamera = (scene: BABYLON.Scene) => {
 
   // Physics model
   camera.checkCollisions = true;
-  camera.applyGravity = true;
+  camera.applyGravity = false;
   camera.speed = 0.035;
 
   // Key controls for WASD and arrows
@@ -100,19 +46,19 @@ const setupCamera = (scene: BABYLON.Scene) => {
 
 const setupEnvironment = (scene: BABYLON.Scene) => {
   // Environment Texture
-  const hdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(
-    "assets/img/gallery.env",
-    scene
-  );
+  // const hdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(
+  //   "assets/img/gallery.env",
+  //   scene
+  // );
   scene.imageProcessingConfiguration.exposure = 0.1;
   scene.imageProcessingConfiguration.contrast = 1.0;
-  scene.environmentTexture = hdrTexture;
+  // scene.environmentTexture = hdrTexture;
 
   // Skybox
   const hdrSkybox = BABYLON.Mesh.CreateBox("hdrSkyBox", 1000.0, scene);
   const hdrSkyboxMaterial = new BABYLON.PBRMaterial("skyBox", scene);
   hdrSkyboxMaterial.backFaceCulling = false;
-  hdrSkyboxMaterial.reflectionTexture = hdrTexture.clone();
+  // hdrSkyboxMaterial.reflectionTexture = hdrTexture.clone();
   hdrSkyboxMaterial.reflectionTexture.coordinatesMode =
     BABYLON.Texture.SKYBOX_MODE;
   hdrSkyboxMaterial.microSurface = 1.0;
@@ -127,20 +73,37 @@ const setupLights = (scene: BABYLON.Scene) => {
     new BABYLON.Vector3(1, 1, 0),
     scene
   );
-  const light2 = new BABYLON.PointLight(
-    "light2",
+  light1.intensity = 0.1;
+
+  // const light2 = new BABYLON.PointLight(
+  //   "light2",
+  //   new BABYLON.Vector3(0, 1, -1),
+  //   scene
+  // );
+  // light1.intensity = 10;
+
+  const light3 = new BABYLON.SpotLight(
+    "light3",
     new BABYLON.Vector3(0, 1, -1),
+    new BABYLON.Vector3(0, 0, 0),
+    1.1,
+    16,
     scene
   );
-  light1.intensity = 10;
+  light3.projectionTexture = new BABYLON.Texture(
+    "assets/img/fb_screenshot.jpg",
+    scene
+  );
+  light3.setDirectionToTarget(BABYLON.Vector3.Zero());
+  light3.intensity = 1.5;
 
-  return [light1, light2];
+  return [light1, light3];
 };
 
 const setupGltf = async (scene: BABYLON.Scene) => {
   const container = await BABYLON.SceneLoader.LoadAssetContainerAsync(
     "./assets/gltf/",
-    "gallery.glb",
+    "human_single_material.glb",
     scene
   );
 
@@ -179,38 +142,6 @@ const setupReflection = (
       );
     },
   };
-};
-
-const setupText = (scene: BABYLON.Scene) => {
-  const plane = BABYLON.Mesh.CreatePlane("Text Plane", 1, scene);
-  plane.rotation.y = 3.14159;
-  plane.position = new BABYLON.Vector3(-2.27, 1, -0.335);
-
-  const textTexture = new BABYLON.DynamicTexture(
-    "Dynamic Texture",
-    { width: 512, height: 512 },
-    scene,
-    false
-  );
-  textTexture.hasAlpha = true;
-  const textContext = textTexture.getContext();
-
-  const textMaterial = new BABYLON.StandardMaterial("Mat", scene);
-  textMaterial.diffuseTexture = textTexture;
-  plane.material = textMaterial;
-
-  // Add text to dynamic texture
-  const font = "bold 44px helvetica";
-  textTexture.drawText(
-    "WHAT COLOUR IS YOUR WORLD?",
-    75,
-    135,
-    font,
-    "black",
-    null,
-    true,
-    true
-  );
 };
 
 const setupPipeline = (scene: BABYLON.Scene, camera: BABYLON.Camera) => {
@@ -259,28 +190,33 @@ const createScene = async () => {
   const scene = new BABYLON.Scene(engine);
   scene.collisionsEnabled = true;
   scene.gravity = new BABYLON.Vector3(0, -0.9, 0);
+  scene.clearColor = BABYLON.Color4.FromColor3(BABYLON.Color3.Black());
 
-  // scene.debugLayer.show();
+  scene.debugLayer.show();
 
   const camera = setupCamera(scene);
   setupLights(scene);
-  setupEnvironment(scene);
+  // setupEnvironment(scene);
   const gltf = await setupGltf(scene);
-  const collisionMesh = gltf.meshes.find((e) => e.name === "CollisionMesh");
-  if (collisionMesh) {
-    collisionMesh.checkCollisions = true;
-    collisionMesh.visibility = 0;
-  }
-  const s1Bounds = gltf.meshes.find((e) => e.name === "S1Bounds");
-  if (s1Bounds) {
-    s1Bounds.visibility = 0;
-  }
-  const s2Bounds = gltf.meshes.find((e) => e.name === "S2Bounds");
-  if (s2Bounds) {
-    s2Bounds.visibility = 0;
-  }
+  // const collisionMesh = gltf.meshes.find((e) => e.name === "CollisionMesh");
+  // if (collisionMesh) {
+  //   collisionMesh.checkCollisions = true;
+  //   collisionMesh.visibility = 0;
+  // }
+  // const s1Bounds = gltf.meshes.find((e) => e.name === "S1Bounds");
+  // if (s1Bounds) {
+  //   s1Bounds.visibility = 0;
+  // }
 
-  const s2Text = gltf.meshes.find((e) => e.id === "S2Text");
+  const bodyMesh = gltf.meshes.find((e) => e.name === "m_ca01");
+  bodyMesh.material = getGhostMaterial();
+
+  // const boxMesh = BABYLON.Mesh.CreateBox("box", 2, scene);
+  // boxMesh.position = new BABYLON.Vector3(0, 2, -2);
+  // boxMesh.material = getGhostMaterial();
+  // scene.addMesh(boxMesh);
+
+  // const s2Text = gltf.meshes.find((e) => e.id === "S2Text");
   const mat = new BABYLON.StandardMaterial("titleCard", scene);
   mat.diffuseTexture = new BABYLON.Texture(
     "assets/img/titlecard.svg",
@@ -291,24 +227,27 @@ const createScene = async () => {
   mat.diffuseTexture.hasAlpha = true;
   // mat.diffuseTexture.uScale = 1.0;
   // mat.diffuseTexture.vScale = -1.0;
-  s2Text.material = mat;
+  // s2Text.material = mat;
 
-  setupText(scene);
+  // setupText(scene);
   const pipeline = setupPipeline(scene, camera);
 
-  const floorMesh = gltf.meshes.find((e) => e.id === "floor");
-  const reflection = setupReflection(scene, floorMesh, []);
-  const updateReflection = (refMeshes: BABYLON.Mesh[]) => {
-    const filteredMeshes = gltf.meshes
-      .filter((e) => e.id !== "floor")
-      .concat(refMeshes);
-    reflection.updateMeshes(filteredMeshes);
-  };
+  // const floorMesh = gltf.meshes.find((e) => e.id === "floor");
+  // const reflection = setupReflection(scene, floorMesh, []);
+  // const updateReflection = (refMeshes: BABYLON.Mesh[]) => {
+  //   const filteredMeshes = gltf.meshes
+  //     .filter((e) => e.id !== "floor")
+  //     .concat(refMeshes);
+  //   reflection.updateMeshes(filteredMeshes);
+  // };
 
   // let time = 0;
   // scene.registerBeforeRender(() => {
   //   time += engine.getDeltaTime() / 1000;
   // });
+
+  const groundMesh = BABYLON.Mesh.CreateGround("groundMesh", 500, 500, 1);
+  scene.addMesh(groundMesh);
 
   return scene;
 };

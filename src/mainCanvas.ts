@@ -15,8 +15,8 @@ const setupCamera = (scene: BABYLON.Scene) => {
     scene
   );
   camera.minZ = 0.1;
-  camera.position.set(0.64, 1.25, 9.98);
-  camera.rotation.set(0, -3.13, 0);
+  camera.position.set(-2.88, 4.16, -10.15);
+  camera.rotation.set(16, 48, 0);
   initPointerLock(engine.getRenderingCanvas(), camera, blocker);
 
   // camera.fov = 2.024;
@@ -30,7 +30,8 @@ const setupCamera = (scene: BABYLON.Scene) => {
   // Physics model
   camera.checkCollisions = true;
   camera.applyGravity = false;
-  camera.speed = 0.035;
+  // camera.speed = 0.035;
+  camera.speed = 0.35;
 
   // Key controls for WASD and arrows
   camera.keysUp = [87, 38];
@@ -46,19 +47,19 @@ const setupCamera = (scene: BABYLON.Scene) => {
 
 const setupEnvironment = (scene: BABYLON.Scene) => {
   // Environment Texture
-  // const hdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(
-  //   "assets/img/gallery.env",
-  //   scene
-  // );
+  const hdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(
+    "assets/img/gallery.env",
+    scene
+  );
   scene.imageProcessingConfiguration.exposure = 0.1;
   scene.imageProcessingConfiguration.contrast = 1.0;
-  // scene.environmentTexture = hdrTexture;
+  scene.environmentTexture = hdrTexture;
 
   // Skybox
   const hdrSkybox = BABYLON.Mesh.CreateBox("hdrSkyBox", 1000.0, scene);
   const hdrSkyboxMaterial = new BABYLON.PBRMaterial("skyBox", scene);
   hdrSkyboxMaterial.backFaceCulling = false;
-  // hdrSkyboxMaterial.reflectionTexture = hdrTexture.clone();
+  hdrSkyboxMaterial.reflectionTexture = hdrTexture.clone();
   hdrSkyboxMaterial.reflectionTexture.coordinatesMode =
     BABYLON.Texture.SKYBOX_MODE;
   hdrSkyboxMaterial.microSurface = 1.0;
@@ -84,8 +85,8 @@ const setupLights = (scene: BABYLON.Scene) => {
 
   const light3 = new BABYLON.SpotLight(
     "light3",
-    new BABYLON.Vector3(0, 1, -1),
-    new BABYLON.Vector3(0, 0, 0),
+    new BABYLON.Vector3(0, 4, -5),
+    new BABYLON.Vector3(0, -0.71, 0.71),
     1.1,
     16,
     scene
@@ -193,6 +194,8 @@ const createScene = async () => {
   scene.clearColor = BABYLON.Color4.FromColor3(BABYLON.Color3.Black());
 
   scene.debugLayer.show();
+  const pmon = new BABYLON.PerformanceMonitor(5);
+  pmon.enable();
 
   const camera = setupCamera(scene);
   setupLights(scene);
@@ -210,11 +213,15 @@ const createScene = async () => {
 
   const bodyMesh = gltf.meshes.find((e) => e.name === "m_ca01");
   bodyMesh.material = getGhostMaterial();
+  bodyMesh.material.needDepthPrePass = true;
 
   // const boxMesh = BABYLON.Mesh.CreateBox("box", 2, scene);
   // boxMesh.position = new BABYLON.Vector3(0, 2, -2);
   // boxMesh.material = getGhostMaterial();
-  // scene.addMesh(boxMesh);
+  // const pbrMat = new BABYLON.PBRMaterial("standardMaterial", scene);
+  // pbrMat.roughness = 0.4;
+  // pbrMat.metallic = 1.0;
+  // boxMesh.material = pbrMat;
 
   // const s2Text = gltf.meshes.find((e) => e.id === "S2Text");
   const mat = new BABYLON.StandardMaterial("titleCard", scene);

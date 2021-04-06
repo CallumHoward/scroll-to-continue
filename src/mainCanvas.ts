@@ -104,7 +104,7 @@ const setupLights = (scene: BABYLON.Scene) => {
 const setupGltf = async (scene: BABYLON.Scene) => {
   const container = await BABYLON.SceneLoader.LoadAssetContainerAsync(
     "./assets/gltf/",
-    "human_single_material.glb",
+    "human_animated_test.glb",
     scene
   );
 
@@ -212,12 +212,27 @@ const createScene = async () => {
   // }
 
   const bodyMesh = gltf.meshes.find((e) => e.name === "m_ca01");
-  bodyMesh.material = getGhostMaterial();
-  bodyMesh.material.needDepthPrePass = true;
+
+  const ghostMaterial = await getGhostMaterial(scene);
+  ghostMaterial.needDepthPrePass = true;
+  bodyMesh.material = ghostMaterial;
+
+  const instances = [];
+  const createBodyInstance = (index: number) => {
+    const instance = (bodyMesh as BABYLON.Mesh).createInstance(`body_${index}`);
+    // const instance = bodyMesh.clone(`body_${index}`, bodyMesh.parent);
+    instance.setParent(bodyMesh.parent);
+    instance.scaling.x = -1;
+    instance.position.x = index * 2;
+    instances.push(instance);
+  };
+  for (let i = 1; i < 25; i++) {
+    createBodyInstance(i);
+  }
 
   // const boxMesh = BABYLON.Mesh.CreateBox("box", 2, scene);
   // boxMesh.position = new BABYLON.Vector3(0, 2, -2);
-  // boxMesh.material = getGhostMaterial();
+  // boxMesh.material = await getGhostMaterial(scene);
   // const pbrMat = new BABYLON.PBRMaterial("standardMaterial", scene);
   // pbrMat.roughness = 0.4;
   // pbrMat.metallic = 1.0;
@@ -255,6 +270,8 @@ const createScene = async () => {
 
   const groundMesh = BABYLON.Mesh.CreateGround("groundMesh", 500, 500, 1);
   scene.addMesh(groundMesh);
+
+  scene.beginAnimation(instances[0], 0, 2);
 
   return scene;
 };

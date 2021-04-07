@@ -284,15 +284,14 @@ const createScene2 = async () => {
 
   // @ts-ignore
   const divs = [...document.querySelectorAll(".rect")];
-  const rects = new Array(divs.length);
-  const planeBounds = new Array(divs.length);
-  const planes = new Array(divs.length);
+  const planeBounds: DOMRect[] = new Array(divs.length);
+  const planes: BABYLON.Mesh[] = new Array(divs.length);
 
   const setElementsBounds = () => {
     for (let i = 0; i < divs.length; i++) {
       const bounds = divs[i].getBoundingClientRect();
-      rects[i] = bounds;
       planeBounds[i] = {
+        ...bounds,
         x: bounds.x,
         y: bounds.y + (window.scrollY || window.pageYOffset),
         width: bounds.width,
@@ -313,6 +312,7 @@ const createScene2 = async () => {
       planes[i] = basePlane.clone(`div_${i}`);
       planes[i].material = basePlaneMaterial;
       planes[i].doNotSyncBoundingInfo = true;
+      planes[i].layerMask = 1;
     }
   };
 
@@ -358,7 +358,6 @@ const createScene2 = async () => {
   init();
   watchViewport(updateValues);
 
-  // setupCamera(scene);
   const camera = new BABYLON.ArcRotateCamera(
     "OrthoCamera",
     -Math.PI / 2,
@@ -368,6 +367,7 @@ const createScene2 = async () => {
     scene
   );
   camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
+  camera.layerMask = 1;
 
   return scene;
 };

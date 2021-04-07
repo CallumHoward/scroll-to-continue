@@ -1,8 +1,8 @@
 import * as BABYLON from "babylonjs";
 import "babylonjs-loaders";
-import { watchViewport } from "tornis";
 
 import { getGhostMaterial } from "./ghost-material";
+import { createIntroScene } from "./introCanvas";
 import { initPointerLock } from "./pointer-lock";
 
 const canvas = document.getElementById("renderCanvas") as HTMLCanvasElement; // Get the canvas element
@@ -16,6 +16,7 @@ const setupCamera = (scene: BABYLON.Scene) => {
     new BABYLON.Vector3(0, 1.5, -3),
     scene
   );
+  camera.layerMask = 2;
   camera.minZ = 0.1;
   camera.position.set(-2.88, 4.16, -10.15);
   camera.rotation.set(16, 48, 0);
@@ -77,6 +78,7 @@ const setupLights = (scene: BABYLON.Scene) => {
     scene
   );
   light1.intensity = 0.1;
+  light1.includeOnlyWithLayerMask = 2;
 
   // const light2 = new BABYLON.PointLight(
   //   "light2",
@@ -93,6 +95,7 @@ const setupLights = (scene: BABYLON.Scene) => {
     16,
     scene
   );
+  light3.includeOnlyWithLayerMask = 2;
   light3.projectionTexture = new BABYLON.Texture(
     "assets/img/fb_screenshot.jpg",
     scene
@@ -112,6 +115,32 @@ const setupGltf = async (scene: BABYLON.Scene) => {
 
   container.addAllToScene();
   return container;
+};
+
+const setupBodyInstances = async (
+  gltf: BABYLON.AssetContainer,
+  scene: BABYLON.Scene
+) => {
+  const bodyMesh = gltf.meshes.find((e) => e.name === "m_ca01");
+  bodyMesh.layerMask = 2;
+
+  const ghostMaterial = await getGhostMaterial(scene);
+  ghostMaterial.needDepthPrePass = true;
+  bodyMesh.material = ghostMaterial;
+
+  const instances = [];
+  const createBodyInstance = (index: number) => {
+    const instance = (bodyMesh as BABYLON.Mesh).createInstance(`body_${index}`);
+    // const instance = bodyMesh.clone(`body_${index}`, bodyMesh.parent);
+    instance.setParent(bodyMesh.parent);
+    instance.layerMask = 2;
+    instance.scaling.x = -1;
+    instance.position.x = index * 2;
+    instances.push(instance);
+  };
+  for (let i = 1; i < 25; i++) {
+    createBodyInstance(i);
+  }
 };
 
 const setupReflection = (
@@ -189,20 +218,18 @@ const setupPipeline = (scene: BABYLON.Scene, camera: BABYLON.Camera) => {
   return { setHue };
 };
 
-const createScene = async () => {
-  const scene = new BABYLON.Scene(engine);
-  scene.collisionsEnabled = true;
-  scene.gravity = new BABYLON.Vector3(0, -0.9, 0);
-  scene.clearColor = BABYLON.Color4.FromColor3(BABYLON.Color3.Black());
-
-  scene.debugLayer.show();
-  const pmon = new BABYLON.PerformanceMonitor(5);
-  pmon.enable();
+const createMainScene = async (scene: BABYLON.Scene) => {
+  // scene.collisionsEnabled = true;
+  // scene.gravity = new BABYLON.Vector3(0, -0.9, 0);
+  // scene.clearColor = BABYLON.Color4.FromColor3(BABYLON.Color3.Black());
 
   const camera = setupCamera(scene);
+  // scene.activeCameras.push(camera);
   setupLights(scene);
   // setupEnvironment(scene);
   const gltf = await setupGltf(scene);
+  await setupBodyInstances(gltf, scene);
+
   // const collisionMesh = gltf.meshes.find((e) => e.name === "CollisionMesh");
   // if (collisionMesh) {
   //   collisionMesh.checkCollisions = true;
@@ -213,25 +240,6 @@ const createScene = async () => {
   //   s1Bounds.visibility = 0;
   // }
 
-  const bodyMesh = gltf.meshes.find((e) => e.name === "m_ca01");
-
-  const ghostMaterial = await getGhostMaterial(scene);
-  ghostMaterial.needDepthPrePass = true;
-  bodyMesh.material = ghostMaterial;
-
-  const instances = [];
-  const createBodyInstance = (index: number) => {
-    const instance = (bodyMesh as BABYLON.Mesh).createInstance(`body_${index}`);
-    // const instance = bodyMesh.clone(`body_${index}`, bodyMesh.parent);
-    instance.setParent(bodyMesh.parent);
-    instance.scaling.x = -1;
-    instance.position.x = index * 2;
-    instances.push(instance);
-  };
-  for (let i = 1; i < 25; i++) {
-    createBodyInstance(i);
-  }
-
   // const boxMesh = BABYLON.Mesh.CreateBox("box", 2, scene);
   // boxMesh.position = new BABYLON.Vector3(0, 2, -2);
   // boxMesh.material = await getGhostMaterial(scene);
@@ -241,20 +249,20 @@ const createScene = async () => {
   // boxMesh.material = pbrMat;
 
   // const s2Text = gltf.meshes.find((e) => e.id === "S2Text");
-  const mat = new BABYLON.StandardMaterial("titleCard", scene);
-  mat.diffuseTexture = new BABYLON.Texture(
-    "assets/img/titlecard.svg",
-    scene,
-    false,
-    false
-  );
-  mat.diffuseTexture.hasAlpha = true;
+  // const mat = new BABYLON.StandardMaterial("titleCard", scene);
+  // mat.diffuseTexture = new BABYLON.Texture(
+  //   "assets/img/titlecard.svg",
+  //   scene,
+  //   false,
+  //   false
+  // );
+  // mat.diffuseTexture.hasAlpha = true;
   // mat.diffuseTexture.uScale = 1.0;
   // mat.diffuseTexture.vScale = -1.0;
   // s2Text.material = mat;
 
   // setupText(scene);
-  const pipeline = setupPipeline(scene, camera);
+  // const pipeline = setupPipeline(scene, camera);
 
   // const floorMesh = gltf.meshes.find((e) => e.id === "floor");
   // const reflection = setupReflection(scene, floorMesh, []);
@@ -271,109 +279,22 @@ const createScene = async () => {
   // });
 
   const groundMesh = BABYLON.Mesh.CreateGround("groundMesh", 500, 500, 1);
+  groundMesh.layerMask = 2;
   scene.addMesh(groundMesh);
 
-  scene.beginAnimation(instances[0], 0, 2);
-
-  return scene;
-};
-
-const createScene2 = async () => {
-  const scene = new BABYLON.Scene(engine);
-  scene.debugLayer.show();
-
-  // @ts-ignore
-  const divs = [...document.querySelectorAll(".rect")];
-  const planeBounds: DOMRect[] = new Array(divs.length);
-  const planes: BABYLON.Mesh[] = new Array(divs.length);
-
-  const setElementsBounds = () => {
-    for (let i = 0; i < divs.length; i++) {
-      const bounds = divs[i].getBoundingClientRect();
-      planeBounds[i] = {
-        ...bounds,
-        x: bounds.x,
-        y: bounds.y + (window.scrollY || window.pageYOffset),
-        width: bounds.width,
-        height: bounds.height,
-      };
-    }
-  };
-
-  const basePlaneMaterial = new BABYLON.StandardMaterial(
-    "basePlaneMaterial",
-    scene
-  );
-  const basePlane = BABYLON.PlaneBuilder.CreatePlane(`BaseMesh`, {}, scene);
-  basePlane.material = basePlaneMaterial;
-
-  const createElements = () => {
-    for (let i = 0; i < divs.length; i++) {
-      planes[i] = basePlane.clone(`div_${i}`);
-      planes[i].material = basePlaneMaterial;
-      planes[i].doNotSyncBoundingInfo = true;
-      planes[i].layerMask = 1;
-    }
-  };
-
-  const setElementsStyle = () => {
-    for (let i = 0; i < divs.length; i++) {
-      planes[i].scaling.x = divs[i].clientWidth;
-      planes[i].scaling.y = divs[i].clientHeight;
-    }
-  };
-
-  const setElementsPosition = () => {
-    for (let i = 0; i < divs.length; i++) {
-      planes[i].position.y =
-        -planeBounds[i].height / 2 +
-        canvas.clientHeight / 2 -
-        planeBounds[i].y +
-        (window.scrollY || window.pageYOffset);
-      planes[i].position.x =
-        planeBounds[i].width / 2 - canvas.clientWidth / 2 + planeBounds[i].x;
-    }
-  };
-
-  const init = () => {
-    createElements();
-    // setElementsPosition();
-    setElementsBounds();
-    setElementsStyle();
-  };
-
-  const updateValues = ({ size, scroll }) => {
-    if (size.changed) {
-      engine.resize();
-      setElementsBounds();
-      setElementsStyle();
-      setElementsPosition();
-    }
-
-    if (scroll.changed) {
-      setElementsPosition();
-    }
-  };
-
-  init();
-  watchViewport(updateValues);
-
-  const camera = new BABYLON.ArcRotateCamera(
-    "OrthoCamera",
-    -Math.PI / 2,
-    Math.PI / 2,
-    10,
-    BABYLON.Vector3.Zero(),
-    scene
-  );
-  camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
-  camera.layerMask = 1;
+  // scene.beginAnimation(instances[0], 0, 2);
 
   return scene;
 };
 
 const initBabylonCanvas = async () => {
-  const scene = await createScene2();
+  const scene = new BABYLON.Scene(engine);
+  scene.debugLayer.show();
+
+  await createMainScene(scene);
+  // @ts-ignore
+  const divs = [...document.querySelectorAll(".rect")];
+  await createIntroScene(divs, scene, engine, canvas);
   engine.runRenderLoop(() => {
     scene.render();
   });

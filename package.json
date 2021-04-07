@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "webpack",
-    "start": "webpack serve --open"
+    "start": "webpack serve --open --host 192.168.20.18"
   },
   "keywords": [],
   "author": "",
@@ -33,6 +33,7 @@
     "earcut": "^2.2.2",
     "lodash": "^4.17.21",
     "oimo": "^1.0.9",
-    "rxjs": "^6.6.6"
+    "rxjs": "^6.6.6",
+    "tornis": "^0.3.3"
   }
 }

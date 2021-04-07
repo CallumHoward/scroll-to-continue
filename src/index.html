@@ -8,20 +8,21 @@
       body {
         margin: 0;
         width: 100%;
-        height: 100%;
-        overflow: hidden;
         background-color: #000;
         position: relative;
         font-family: Helvetica, Arial, sans-serif;
       }
 
       #renderCanvas {
+        background-color: brown;
+        position: absolute;
         width: 100vw;
         height: 100vh;
         touch-action: none;
       }
 
       #blocker {
+        visibility: hidden;
         overflow: hidden;
         position: absolute;
         z-index: 99;
@@ -42,13 +43,36 @@
       }
 
       #subvirtual {
-        position: relative;
+        position: fixed;
+        left: 0;
+        top: 0;
+        opacity: 0.5;
         width: 100%;
         height: 100%;
       }
 
       #inspector-host {
         position: absolute !important;
+      }
+
+      .container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        padding-top: 5rem;
+      }
+
+      .hidden {
+        opacity: 0;
+      }
+
+      .rect {
+        width: 90%;
+        height: 10rem;
+        max-width: 40rem;
+        background-color: grey;
+        margin-bottom: 5rem;
       }
 
       .noselect {
@@ -63,16 +87,40 @@
     </style>
   </head>
   <body>
+    <div class="container">
+      <div class="rect hidden"></div>
+      <div class="rect hidden"></div>
+      <div class="rect hidden"></div>
+      <div class="rect hidden"></div>
+      <div class="rect hidden"></div>
+      <div class="rect hidden"></div>
+      <div class="rect hidden"></div>
+      <div class="rect hidden"></div>
+      <div class="rect hidden"></div>
+      <div class="rect hidden"></div>
+      <div class="rect hidden"></div>
+      <div class="rect hidden"></div>
+      <div class="rect hidden"></div>
+      <div class="rect hidden"></div>
+      <div class="rect hidden"></div>
+      <div class="rect hidden"></div>
+      <div class="rect hidden"></div>
+      <div class="rect hidden"></div>
+      <div class="rect hidden"></div>
+      <div class="rect hidden"></div>
+    </div>
+
     <div id="subvirtual">
-      <div id="blocker" class="noselect">
-        <div id="landing-cta">
-          <img alt="origin-logo" src="assets/img/origin.svg" />
-          <span>
-            <h1>ORIGIN (VIRTUAL)</h1>
-            <h3>Click to begin</h3>
-          </span>
-        </div>
-      </div>
+      <!-- <div id="blocker" class="noselect"> -->
+      <!--   <div id="landing-cta"> -->
+      <!--     <img alt="origin-logo" src="assets/img/origin.svg" /> -->
+      <!--     <span> -->
+      <!--       <h1>ORIGIN (VIRTUAL)</h1> -->
+      <!--       <h3>Click to begin</h3> -->
+      <!--     </span> -->
+      <!--   </div> -->
+      <!-- </div> -->
+
       <canvas id="renderCanvas"></canvas>
     </div>
   </body>

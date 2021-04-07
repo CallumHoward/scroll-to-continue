@@ -1,5 +1,7 @@
 import * as BABYLON from "babylonjs";
 import "babylonjs-loaders";
+import { watchViewport } from "tornis";
+
 import { getGhostMaterial } from "./ghost-material";
 import { initPointerLock } from "./pointer-lock";
 
@@ -276,8 +278,102 @@ const createScene = async () => {
   return scene;
 };
 
+const createScene2 = async () => {
+  const scene = new BABYLON.Scene(engine);
+  scene.debugLayer.show();
+
+  // @ts-ignore
+  const divs = [...document.querySelectorAll(".rect")];
+  const rects = new Array(divs.length);
+  const planeBounds = new Array(divs.length);
+  const planes = new Array(divs.length);
+
+  const setElementsBounds = () => {
+    for (let i = 0; i < divs.length; i++) {
+      const bounds = divs[i].getBoundingClientRect();
+      rects[i] = bounds;
+      planeBounds[i] = {
+        x: bounds.x,
+        y: bounds.y + (window.scrollY || window.pageYOffset),
+        width: bounds.width,
+        height: bounds.height,
+      };
+    }
+  };
+
+  const basePlaneMaterial = new BABYLON.StandardMaterial(
+    "basePlaneMaterial",
+    scene
+  );
+  const basePlane = BABYLON.PlaneBuilder.CreatePlane(`BaseMesh`, {}, scene);
+  basePlane.material = basePlaneMaterial;
+
+  const createElements = () => {
+    for (let i = 0; i < divs.length; i++) {
+      planes[i] = basePlane.clone(`div_${i}`);
+      planes[i].material = basePlaneMaterial;
+      planes[i].doNotSyncBoundingInfo = true;
+    }
+  };
+
+  const setElementsStyle = () => {
+    for (let i = 0; i < divs.length; i++) {
+      planes[i].scaling.x = divs[i].clientWidth;
+      planes[i].scaling.y = divs[i].clientHeight;
+    }
+  };
+
+  const setElementsPosition = () => {
+    for (let i = 0; i < divs.length; i++) {
+      planes[i].position.y =
+        -planeBounds[i].height / 2 +
+        canvas.clientHeight / 2 -
+        planeBounds[i].y +
+        (window.scrollY || window.pageYOffset);
+      planes[i].position.x =
+        planeBounds[i].width / 2 - canvas.clientWidth / 2 + planeBounds[i].x;
+    }
+  };
+
+  const init = () => {
+    createElements();
+    // setElementsPosition();
+    setElementsBounds();
+    setElementsStyle();
+  };
+
+  const updateValues = ({ size, scroll }) => {
+    if (size.changed) {
+      engine.resize();
+      setElementsBounds();
+      setElementsStyle();
+      setElementsPosition();
+    }
+
+    if (scroll.changed) {
+      setElementsPosition();
+    }
+  };
+
+  init();
+  watchViewport(updateValues);
+
+  // setupCamera(scene);
+  const camera = new BABYLON.ArcRotateCamera(
+    "OrthoCamera",
+    -Math.PI / 2,
+    Math.PI / 2,
+    10,
+    BABYLON.Vector3.Zero(),
+    scene
+  );
+  camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
+
+  return scene;
+};
+
 const initBabylonCanvas = async () => {
-  const scene = await createScene();
+  const scene = await createScene2();
   engine.runRenderLoop(() => {
     scene.render();
   });

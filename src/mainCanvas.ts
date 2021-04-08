@@ -317,27 +317,58 @@ const setupPipeline = (scene: BABYLON.Scene, camera: BABYLON.Camera) => {
   // motionblur.motionBlurSamples = 32;
 
   // Glow
-  const gl = new BABYLON.GlowLayer("glow", scene, { mainTextureSamples: 1 });
-  gl.intensity = 0.2;
+  const gl = new BABYLON.GlowLayer("glow", scene, {
+    // mainTextureSamples: 1,
+    // mainTextureFixedSize: 256,
+    blurKernelSize: 64,
+  });
+  gl.intensity = 2;
 
-  const densities = new Array(50).fill(0);
+  // const densities = new Array(50).fill(0);
 
-  const setHue = (enabled: boolean, hue: number) => {
-    densities.shift();
-    densities.push(enabled ? 85 : 0);
-    pipeline.imageProcessing.colorCurves.globalDensity =
-      densities.reduce((a, b) => a + b) / densities.length;
+  // const setHue = (enabled: boolean, hue: number) => {
+  //   densities.shift();
+  //   densities.push(enabled ? 85 : 0);
+  //   pipeline.imageProcessing.colorCurves.globalDensity =
+  //     densities.reduce((a, b) => a + b) / densities.length;
 
-    pipeline.imageProcessing.colorCurves.globalHue = hue;
-  };
+  //   pipeline.imageProcessing.colorCurves.globalHue = hue;
+  // };
 
-  return { setHue };
+  // return { setHue };
 };
 
 const createMainScene = async (scene: BABYLON.Scene) => {
   // scene.collisionsEnabled = true;
   // scene.gravity = new BABYLON.Vector3(0, -0.9, 0);
-  // scene.clearColor = BABYLON.Color4.FromColor3(BABYLON.Color3.Black());
+  const sceneColor = BABYLON.Color3.FromHexString("#000010");
+  scene.clearColor = BABYLON.Color4.FromColor3(sceneColor);
+  // scene.fogMode = BABYLON.Scene.FOGMODE_EXP;
+  // scene.fogDensity = 0.02;
+  // scene.fogColor = sceneColor;
+
+  // Skybox
+  const skybox = BABYLON.Mesh.CreateBox("skyBox", 150.0, scene);
+  const skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
+  // skyboxMaterial.diffuseTexture = new BABYLON.NoiseProceduralTexture(
+  //   "perlin",
+  //   256,
+  //   scene
+  // );
+  skyboxMaterial.backFaceCulling = false;
+  skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture(
+    "assets/texture/skybox/skybox",
+    scene
+  );
+  skyboxMaterial.alpha = 0.2;
+  skyboxMaterial.reflectionTexture.coordinatesMode =
+    BABYLON.Texture.SKYBOX_MODE;
+  skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+  skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+  skyboxMaterial.disableLighting = true;
+  skybox.material = skyboxMaterial;
+  skybox.infiniteDistance = true;
+  skybox.layerMask = 2;
 
   const camera = setupCamera(scene);
   // scene.activeCameras.push(camera);
@@ -378,7 +409,7 @@ const createMainScene = async (scene: BABYLON.Scene) => {
   // s2Text.material = mat;
 
   // setupText(scene);
-  // const pipeline = setupPipeline(scene, camera);
+  const pipeline = setupPipeline(scene, camera);
 
   // const floorMesh = gltf.meshes.find((e) => e.id === "floor");
   // const reflection = setupReflection(scene, floorMesh, []);
@@ -396,6 +427,18 @@ const createMainScene = async (scene: BABYLON.Scene) => {
 
   const groundMesh = BABYLON.Mesh.CreateGround("groundMesh", 500, 500, 1);
   groundMesh.layerMask = 2;
+
+  const groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
+  // groundMaterial.alpha = 0.9;
+  groundMaterial.diffuseColor = sceneColor;
+  groundMaterial.disableLighting = true;
+  // groundMaterial.emissiveTexture = new BABYLON.NoiseProceduralTexture(
+  //   "perlin",
+  //   256,
+  //   scene
+  // );
+  groundMesh.material = groundMaterial;
+
   scene.addMesh(groundMesh);
 
   return scene;

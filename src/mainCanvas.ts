@@ -109,7 +109,7 @@ const setupLights = (scene: BABYLON.Scene) => {
 const setupGltf = async (scene: BABYLON.Scene) => {
   const container = await BABYLON.SceneLoader.LoadAssetContainerAsync(
     "./assets/gltf/",
-    "human_animated_test.glb",
+    "human_06.glb",
     scene
   );
 
@@ -121,7 +121,8 @@ const setupBodyInstances = async (
   gltf: BABYLON.AssetContainer,
   scene: BABYLON.Scene
 ) => {
-  const bodyMesh = gltf.meshes.find((e) => e.name === "m_ca01");
+  // const bodyMesh = gltf.meshes.find((e) => e.name === "m_ca01");
+  const bodyMesh = scene.getMeshByName("m_ca01");
   bodyMesh.layerMask = 2;
 
   const ghostMaterial = await getGhostMaterial(scene);
@@ -138,9 +139,41 @@ const setupBodyInstances = async (
     instance.position.x = index * 2;
     instances.push(instance);
   };
-  for (let i = 1; i < 25; i++) {
+  for (let i = 1; i < 3; i++) {
     createBodyInstance(i);
   }
+
+  console.log("LOG: ", scene.animationGroups);
+  console.log("LOG: ", scene.animationGroups[0].children);
+  const ANIM_LEN = 615;
+  const FPS = 36;
+
+  const getStart = (anim: number) => (ANIM_LEN * anim + 1) / FPS;
+  const getEnd = (anim: number) => (ANIM_LEN * (anim + 1)) / FPS;
+
+  scene.stopAllAnimations();
+  scene.animationGroups
+    .find(({ name }) => name === "m_ca01_skeletonAction")
+    .start(false, 1.0, 0, 0);
+  scene.animationGroups
+    .filter(({ name }) => name.startsWith("phone_fb"))
+    .map((group) => {
+      group.start(false, 1.0, (ANIM_LEN + 1) / 36, (ANIM_LEN + 1) / 36);
+      // group.start(true, 1.0, getStart(0), getEnd(0));
+    });
+  scene.animationGroups
+    .filter(({ name }) => name.startsWith("phone_insta"))
+    .map((group) => {
+      group.start(false, 1.0, 0, 0);
+      // group.start(true, 1.0, getStart(1), getEnd(1));
+    });
+  scene.animationGroups
+    .filter(({ name }) => name.startsWith("phone_tinder"))
+    .map((group) => {
+      // group.start(false, 1.0, 0, 0);
+      group.start(true, 1.0, getStart(2), getEnd(2));
+    });
+  // scene.beginAnimation(instances[1], 0, 1);
 };
 
 const setupReflection = (
@@ -282,8 +315,6 @@ const createMainScene = async (scene: BABYLON.Scene) => {
   groundMesh.layerMask = 2;
   scene.addMesh(groundMesh);
 
-  // scene.beginAnimation(instances[0], 0, 2);
-
   return scene;
 };
 
@@ -294,7 +325,7 @@ const initBabylonCanvas = async () => {
   await createMainScene(scene);
   // @ts-ignore
   const divs = [...document.querySelectorAll(".rect")];
-  await createIntroScene(divs, scene, engine, canvas);
+  // await createIntroScene(divs, scene, engine, canvas);
   engine.runRenderLoop(() => {
     scene.render();
   });

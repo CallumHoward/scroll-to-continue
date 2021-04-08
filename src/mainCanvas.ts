@@ -155,17 +155,10 @@ const setupGltf = async (scene: BABYLON.Scene) => {
   return container;
 };
 
-const setupBodyInstances = async (
-  gltf: BABYLON.AssetContainer,
-  scene: BABYLON.Scene
-) => {
+const setupBodyInstances = async (scene: BABYLON.Scene) => {
   // const bodyMesh = gltf.meshes.find((e) => e.name === "m_ca01");
   const bodyMesh = scene.getMeshByName("m_ca01");
   bodyMesh.layerMask = 2;
-  const phoneMeshes = scene.getNodeByName("phone").getChildMeshes();
-  const phoneGroupMeshes = ANIM_NAMES.map((animName) =>
-    scene.getMeshByName(`phone_${animName}_empty`).getChildren()
-  );
 
   const ghostMaterial = await getGhostMaterial(scene);
   ghostMaterial.needDepthPrePass = true;
@@ -181,76 +174,61 @@ const setupBodyInstances = async (
     instance.position.x = index * 2;
   };
 
+  const phone = scene.getNodeByName("phone");
+  const phoneEmptys = ANIM_NAMES.map((animName) =>
+    scene.getNodeByName(`phone_${animName}_empty`)
+  );
   const phoneInstancesEmpty = new BABYLON.Mesh("phoneInstancesEmpty");
+
+  // Clone phone animations
+  const phoneAnimGroups = ANIM_NAMES.map((name) =>
+    scene.getAnimationGroupByName(`phone_${name}`)
+  );
+  const phoneAnimGroupsClones = ANIM_NAMES.map(
+    (name) => new BABYLON.AnimationGroup(`phone_${name}_clones`)
+  );
+
   const createPhoneInstance = (
     index: number,
-    meshGroups: BABYLON.Node[],
+    source: BABYLON.Node,
     name: string
   ) => {
+    // Clone outer phone frame (static)
     const phoneInstanceEmpty = new BABYLON.Mesh(
-      `phoneInstanceEmpty_${name}_${index}`
+      `phoneInstanceEmpty_${index}_${name}`
     );
     phoneInstanceEmpty.setParent(phoneInstancesEmpty);
-    for (const phoneMesh of phoneMeshes) {
-      const phoneInstance = (phoneMesh as BABYLON.Mesh).createInstance(
-        `phone_${index}_${phoneMesh.name}`
+
+    const phoneInstance = (phone as BABYLON.Mesh).clone(`phone_${index}`);
+    phoneInstance.setParent(phoneInstanceEmpty);
+    phoneInstance.layerMask = 2;
+
+    // Clone animated phone content
+    const phoneNodeClone = (source as BABYLON.Mesh).clone(`${name}_${index}`);
+    phoneNodeClone.setParent(phoneInstanceEmpty);
+    phoneNodeClone.layerMask = 2;
+
+    // Add animations to animation group
+    const cloneChildrenNodes = phoneNodeClone.getChildren(null, true);
+    const iMod = index % phoneAnimGroups.length;
+    const animGroup = phoneAnimGroups[iMod];
+    const animGroupClones = phoneAnimGroupsClones[iMod];
+    for (const { animation, target } of animGroup.targetedAnimations) {
+      const newTarget = cloneChildrenNodes.find((node) =>
+        node.name.endsWith(target.name)
       );
-      phoneInstance.setParent(phoneInstancesEmpty);
-      phoneInstance.layerMask = 2;
-      phoneInstance.position.x = index * 2;
+      animGroupClones.addTargetedAnimation(animation, newTarget);
     }
 
-    for (const meshGroup of meshGroups) {
-      for (const mesh of meshGroup.getChildMeshes()) {
-        const meshInstance = (mesh as BABYLON.Mesh).createInstance(
-          `${mesh.name}_${index}`
-        );
-        meshInstance.setParent(phoneInstanceEmpty);
-        meshInstance.layerMask = 2;
-        meshInstance.position.x = index * 2;
-      }
-    }
+    // Move instance to correct location
+    phoneInstanceEmpty.position.x = index * 2;
   };
 
-  for (let i = 1; i < 3; i++) {
+  for (let i = 1; i < 30; i++) {
     createBodyInstance(i);
-    const offset = i % phoneGroupMeshes.length;
-    // createPhoneInstance(i, phoneGroupMeshes[offset], ANIM_NAMES[offset]);
+    const offset = i % ANIM_NAMES.length;
+    createPhoneInstance(i, phoneEmptys[offset], ANIM_NAMES[offset]);
   }
-
-  const instaPhoneNode = scene.getNodeByName("phone_insta_empty");
-
-  const instaPhoneNodeClone = (instaPhoneNode as BABYLON.Mesh).clone(
-    "phone_insta_empty_1"
-  );
-  instaPhoneNodeClone.layerMask = 2;
-  instaPhoneNodeClone.position.x = 1 * 2;
-
-  const instaPhoneAnimGroup = scene.getAnimationGroupByName("phone_insta");
-  const instaPhoneCloneAnimGroup = new BABYLON.AnimationGroup(
-    "instaPhoneCloneAnimGroup"
-  );
-  const cloneChildrenNodes = instaPhoneNodeClone.getChildren(null, true);
-  for (const { animation, target } of instaPhoneAnimGroup.targetedAnimations) {
-    const newTarget = cloneChildrenNodes.find((node) =>
-      node.name.endsWith(target.name)
-    );
-    instaPhoneCloneAnimGroup.addTargetedAnimation(animation, newTarget);
-  }
-
-  // Retarget animation groups
-  // const animationGroupInsta = scene.animationGroups.find(({ name }) =>
-  //   name.startsWith("phone_insta")
-  // );
-  // const instaNode = scene.getNodeByName("phoneInstanceEmpty_insta_1");
-  // animationGroupInsta.children.forEach((child) => {
-  //   const targetName = (child.target as BABYLON.Mesh).name;
-  //   console.log("LOG targetName: ", targetName);
-  //   const instanceMesh = instaNode.getChildMeshes(false, (node) =>
-  //     node.name.startsWith(targetName)
-  //   );
-  //   child.target = instanceMesh;
-  // });
 
   const getStart = (anim: number) => (ANIM_LEN * anim + 1) / FPS;
   const getEnd = (anim: number) => (ANIM_LEN * (anim + 1)) / FPS;
@@ -272,10 +250,13 @@ const setupBodyInstances = async (
     .start(false, 1.0, 0, 0);
   // .start(true, 1.0, getStart(2), getEnd(2));
 
-  scene
-    .getAnimationGroupByName("instaPhoneCloneAnimGroup")
-    // .start(false, 1.0, 0, 0);
-    .start(true, 1.0, getStart(1), getEnd(1));
+  let index = 0;
+  for (const animGroupClones of phoneAnimGroupsClones) {
+    animGroupClones
+      // .start(false, 1.0, 0, 0);
+      .start(true, 1.0, getStart(index), getEnd(index));
+    index++;
+  }
 };
 
 const setupReflection = (
@@ -362,8 +343,8 @@ const createMainScene = async (scene: BABYLON.Scene) => {
   // scene.activeCameras.push(camera);
   setupLights(scene);
   // setupEnvironment(scene);
-  const gltf = await setupGltf(scene);
-  await setupBodyInstances(gltf, scene);
+  await setupGltf(scene);
+  await setupBodyInstances(scene);
 
   // const collisionMesh = gltf.meshes.find((e) => e.name === "CollisionMesh");
   // if (collisionMesh) {

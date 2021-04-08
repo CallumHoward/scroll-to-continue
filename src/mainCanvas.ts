@@ -113,7 +113,43 @@ const setupGltf = async (scene: BABYLON.Scene) => {
     scene
   );
 
+  const ANIMS = ["fb", "insta", "tinder"];
+
   container.addAllToScene();
+  const root = container.meshes.find(({ id }) => id === "__root__");
+
+  // Clean up mesh hierarchy
+  for (const anim of ANIMS) {
+    const empty = new BABYLON.Mesh(`phone_${anim}_empty`, scene);
+    root
+      .getChildren(({ id }) => id.startsWith(`phone_${anim}`))
+      .map((node) => {
+        node.parent = empty;
+      });
+  }
+
+  // Clean up animation groups
+  const animations: { [key: string]: BABYLON.TargetedAnimation[] } = {};
+  for (const animName of ANIMS) {
+    const groups = container.animationGroups.filter(({ name }) =>
+      name.startsWith(`phone_${animName}`)
+    );
+    animations[animName] = groups.map((group) => group.children).flat();
+    groups.forEach((group) => group.dispose());
+  }
+  for (const [key, group] of Object.entries(animations)) {
+    const animationGroup = new BABYLON.AnimationGroup(`phone_${key}`, scene);
+    for (const anim of group) {
+      animationGroup.addTargetedAnimation(anim.animation, anim.target);
+    }
+  }
+
+  // Clean up GLTF container
+  root.getChildren().map((node: BABYLON.Node) => {
+    node.parent = null;
+  });
+  root.dispose();
+
   return container;
 };
 
@@ -143,8 +179,6 @@ const setupBodyInstances = async (
     createBodyInstance(i);
   }
 
-  console.log("LOG: ", scene.animationGroups);
-  console.log("LOG: ", scene.animationGroups[0].children);
   const ANIM_LEN = 615;
   const FPS = 36;
 
@@ -156,24 +190,17 @@ const setupBodyInstances = async (
     .find(({ name }) => name === "m_ca01_skeletonAction")
     .start(false, 1.0, 0, 0);
   scene.animationGroups
-    .filter(({ name }) => name.startsWith("phone_fb"))
-    .map((group) => {
-      group.start(false, 1.0, (ANIM_LEN + 1) / 36, (ANIM_LEN + 1) / 36);
-      // group.start(true, 1.0, getStart(0), getEnd(0));
-    });
+    .find(({ name }) => name.startsWith("phone_fb"))
+    .start(false, 1.0, (ANIM_LEN + 1) / 36, (ANIM_LEN + 1) / 36);
+  // .start(true, 1.0, getStart(0), getEnd(0));
   scene.animationGroups
-    .filter(({ name }) => name.startsWith("phone_insta"))
-    .map((group) => {
-      group.start(false, 1.0, 0, 0);
-      // group.start(true, 1.0, getStart(1), getEnd(1));
-    });
+    .find(({ name }) => name.startsWith("phone_insta"))
+    .start(false, 1.0, 0, 0);
+  // .start(true, 1.0, getStart(1), getEnd(1));
   scene.animationGroups
-    .filter(({ name }) => name.startsWith("phone_tinder"))
-    .map((group) => {
-      // group.start(false, 1.0, 0, 0);
-      group.start(true, 1.0, getStart(2), getEnd(2));
-    });
-  // scene.beginAnimation(instances[1], 0, 1);
+    .find(({ name }) => name.startsWith("phone_tinder"))
+    // .start(false, 1.0, 0, 0);
+    .start(true, 1.0, getStart(2), getEnd(2));
 };
 
 const setupReflection = (

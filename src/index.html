@@ -1,15 +1,36 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta http-equiv="Content-Type" content="text/html" charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html" />
     <title>Webpack TypeScript BabylonJS Starter</title>
-    <style>
+    <style type="text/css">
       html,
       body {
+        height: 100%;
+        overflow: hidden;
+
         margin: 0;
         width: 100%;
         position: relative;
         font-family: Helvetica, Arial, sans-serif;
+      }
+
+      .Loop {
+        position: relative;
+        height: 100%;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      section {
+        position: relative;
+        text-align: center;
+        padding-bottom: 7rem;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
       }
 
       #renderCanvas {
@@ -58,7 +79,6 @@
         align-items: center;
         justify-content: center;
         flex-direction: column;
-        padding-top: 5rem;
       }
 
       .hidden {
@@ -75,7 +95,6 @@
         height: 10rem;
         max-width: 40rem;
         background-color: grey;
-        margin-bottom: 5rem;
         padding: 2rem;
       }
 
@@ -97,36 +116,10 @@
                                   supported by Chrome, Edge, Opera and Firefox */
       }
     </style>
+    <script defer type="text/javascript" src="./src/loop-scroll.js"></script>
   </head>
-  <body>
-    <div class="container hidden">
-      <div class="wgl-rect">
-        <img
-          class="wgl-image"
-          src="https://picsum.photos/id/1011/1000/667"
-          alt="sample-image"
-        />
-        <p class="wgl-text">Content</p>
-      </div>
-      <div class="wgl-rect"><p class="wgl-text">Content</p></div>
-      <div class="wgl-rect"><p class="wgl-text">Content</p></div>
-      <div class="wgl-rect"><p class="wgl-text">Content</p></div>
-      <div class="wgl-rect"><p class="wgl-text">Content</p></div>
-      <div class="wgl-rect"><p class="wgl-text">Content</p></div>
-      <div class="wgl-rect"><p class="wgl-text">Content</p></div>
-      <div class="wgl-rect"><p class="wgl-text">Content</p></div>
-      <div class="wgl-rect"><p class="wgl-text">Content</p></div>
-      <div class="wgl-rect">Content</div>
-      <div class="wgl-rect">Content</div>
-      <div class="wgl-rect">Content</div>
-      <div class="wgl-rect">Content</div>
-      <div class="wgl-rect">Content</div>
-      <div class="wgl-rect">Content</div>
-      <div class="wgl-rect">Content</div>
-      <div class="wgl-rect">Content</div>
-      <div class="wgl-rect">Content</div>
-    </div>
 
+  <body>
     <div id="subvirtual">
       <!-- <div id="blocker" class="noselect"> -->
       <!--   <div id="landing-cta"> -->
@@ -140,5 +133,76 @@
 
       <canvas id="renderCanvas"></canvas>
     </div>
+
+    <main role="main" class="Loop js-loop">
+      <section>
+        <div class="wgl-rect">
+          <img
+            class="wgl-image"
+            src="https://picsum.photos/id/1011/1000/667"
+            alt="sample-image"
+          />
+          <p class="wgl-text">Content 1</p>
+        </div>
+      </section>
+      <section>
+        <div class="wgl-rect"><p class="wgl-text">Content 2</p></div>
+      </section>
+      <section>
+        <div class="wgl-rect"><p class="wgl-text">Content 3</p></div>
+      </section>
+      <section>
+        <div class="wgl-rect"><p class="wgl-text">Content 4</p></div>
+      </section>
+      <section>
+        <div class="wgl-rect"><p class="wgl-text">Content 5</p></div>
+      </section>
+      <section>
+        <div class="wgl-rect"><p class="wgl-text">Content 6</p></div>
+      </section>
+      <section>
+        <div class="wgl-rect"><p class="wgl-text">Content 7</p></div>
+      </section>
+      <section>
+        <div class="wgl-rect"><p class="wgl-text">Content 8</p></div>
+      </section>
+      <section>
+        <div class="wgl-rect"><p class="wgl-text">Content 9</p></div>
+      </section>
+      <section class="is-clone">
+        <div class="wgl-rect">
+          <img
+            class="wgl-image"
+            src="https://picsum.photos/id/1011/1000/667"
+            alt="sample-image"
+          />
+          <p class="wgl-text">Content 1</p>
+        </div>
+      </section>
+      <section class="is-clone">
+        <div class="wgl-rect"><p class="wgl-text">Content 2</p></div>
+      </section>
+      <section class="is-clone">
+        <div class="wgl-rect"><p class="wgl-text">Content 3</p></div>
+      </section>
+      <section class="is-clone">
+        <div class="wgl-rect"><p class="wgl-text">Content 4</p></div>
+      </section>
+      <section class="is-clone">
+        <div class="wgl-rect"><p class="wgl-text">Content 5</p></div>
+      </section>
+      <section class="is-clone">
+        <div class="wgl-rect"><p class="wgl-text">Content 6</p></div>
+      </section>
+      <section class="is-clone">
+        <div class="wgl-rect"><p class="wgl-text">Content 7</p></div>
+      </section>
+      <section class="is-clone">
+        <div class="wgl-rect"><p class="wgl-text">Content 8</p></div>
+      </section>
+      <section class="is-clone">
+        <div class="wgl-rect"><p class="wgl-text">Content 9</p></div>
+      </section>
+    </main>
   </body>
 </html>

@@ -7,6 +7,8 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 // copies the assets folder into dist folder
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+// compress assets
+const CompressionPlugin = require("compression-webpack-plugin");
 // output folder location
 const distFolder = "./dist";
 
@@ -14,6 +16,7 @@ module.exports = {
   mode: 'development',
   entry: './src/index.ts',
   plugins: [
+    // new CompressionPlugin(),
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
       template: 'src/index.html'

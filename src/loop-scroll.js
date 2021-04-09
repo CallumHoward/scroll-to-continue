@@ -59,7 +59,6 @@ function scrollUpdate() {
 }
 
 function init() {
-  console.log("LOG init");
   reCalc();
 
   context.addEventListener(

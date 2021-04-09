@@ -3,6 +3,7 @@ import * as GUI from "babylonjs-gui";
 import { watchViewport } from "tornis";
 
 export const createIntroScene = async (
+  context: Element,
   cardDivs: HTMLDivElement[],
   imageEls: HTMLImageElement[],
   textEls: HTMLElement[],
@@ -16,6 +17,11 @@ export const createIntroScene = async (
   const imagePlanes: BABYLON.Mesh[] = new Array(cardDivs.length);
   const textPlaneBounds: DOMRect[] = new Array(textEls.length);
   const textPlanes: GUI.TextBlock[] = new Array(textEls.length);
+
+  const getScrollPos = () =>
+    // @ts-ignore
+    (context.pageYOffset || context.scrollTop) - (context.clientTop || 0);
+  let prevScrollPos = getScrollPos();
 
   const createElements = () => {
     const basePlaneMaterial = new BABYLON.StandardMaterial(
@@ -91,7 +97,6 @@ export const createIntroScene = async (
     // Images
     for (let i = 0; i < imageEls.length; i++) {
       const bounds = imageEls[i].getBoundingClientRect();
-      console.log("LOG bounds: ", bounds);
       imagePlaneBounds[i] = {
         ...bounds,
         x: bounds.x,
@@ -217,10 +222,15 @@ export const createIntroScene = async (
       setElementsStyle();
       setElementsPosition();
     }
+  };
 
-    if (scroll.changed) {
+  const onScroll = () => {
+    const scrollPos = getScrollPos();
+    if (prevScrollPos !== scrollPos) {
+      prevScrollPos = scrollPos;
+      setElementsBounds();
       setElementsPosition();
-      if (scroll.bottom > 5000) {
+      if (scrollPos > 5000) {
         console.log("switching scenes");
         // TODO change scene
       }
@@ -229,6 +239,14 @@ export const createIntroScene = async (
 
   init();
   watchViewport(updateValues);
+
+  context.addEventListener(
+    "scroll",
+    function () {
+      window.requestAnimationFrame(onScroll);
+    },
+    false
+  );
 
   const hemisphericLight = new BABYLON.HemisphericLight(
     "hemisphericLight",

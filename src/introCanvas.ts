@@ -15,6 +15,7 @@ export const createIntroScene = async (
       "basePlaneMaterial",
       scene
     );
+    basePlaneMaterial.diffuseColor = BABYLON.Color3.White();
     const basePlane = BABYLON.PlaneBuilder.CreatePlane("basePlaneMesh", {});
     basePlane.material = basePlaneMaterial;
 
@@ -83,12 +84,12 @@ export const createIntroScene = async (
   init();
   watchViewport(updateValues);
 
-  const directionalLight = new BABYLON.DirectionalLight(
-    "directionalLight",
-    new BABYLON.Vector3(0, 0, 1),
+  const hemisphericLight = new BABYLON.HemisphericLight(
+    "hemisphericLight",
+    new BABYLON.Vector3(0, 0, -1),
     scene
   );
-  directionalLight.includeOnlyWithLayerMask = 1;
+  hemisphericLight.includeOnlyWithLayerMask = 1;
   const camera = new BABYLON.ArcRotateCamera(
     "OrthoCamera",
     -Math.PI / 2,

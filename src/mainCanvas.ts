@@ -299,11 +299,13 @@ const setupPipeline = (scene: BABYLON.Scene, camera: BABYLON.Camera) => {
     scene,
     [camera]
   );
-  pipeline.imageProcessingEnabled = true;
-  pipeline.imageProcessing.vignetteEnabled = true;
-  pipeline.imageProcessing.vignetteWeight = 5;
-  pipeline.imageProcessing.contrast = 1.6;
-  pipeline.imageProcessing.exposure = 0.2;
+  pipeline.imageProcessingEnabled = false;
+  if (pipeline.imageProcessingEnabled) {
+    pipeline.imageProcessing.vignetteEnabled = true;
+    pipeline.imageProcessing.vignetteWeight = 5;
+    pipeline.imageProcessing.contrast = 1.6;
+    pipeline.imageProcessing.exposure = 0.2;
+  }
 
   // Motion blur - causes jaggies
   // const motionblur = new BABYLON.MotionBlurPostProcess(
@@ -323,6 +325,7 @@ const setupPipeline = (scene: BABYLON.Scene, camera: BABYLON.Camera) => {
     blurKernelSize: 64,
   });
   gl.intensity = 2;
+  gl.referenceMeshToUseItsOwnMaterial(scene.getMeshByName("m_ca01"));
 
   // const densities = new Array(50).fill(0);
 
@@ -451,7 +454,7 @@ const initBabylonCanvas = async () => {
   await createMainScene(scene);
   // @ts-ignore
   const divs = [...document.querySelectorAll(".rect")];
-  // await createIntroScene(divs, scene, engine, canvas);
+  await createIntroScene(divs, scene, engine, canvas);
   engine.runRenderLoop(() => {
     scene.render();
   });

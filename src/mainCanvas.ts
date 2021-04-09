@@ -100,10 +100,10 @@ const setupLights = (scene: BABYLON.Scene) => {
     scene
   );
   light3.includeOnlyWithLayerMask = 2;
-  light3.projectionTexture = new BABYLON.Texture(
-    "assets/img/fb_screenshot.jpg",
-    scene
-  );
+  // light3.projectionTexture = new BABYLON.Texture(
+  //   "assets/img/fb_screenshot.jpg",
+  //   scene
+  // );
   light3.setDirectionToTarget(BABYLON.Vector3.Zero());
   light3.intensity = 1.5;
 
@@ -113,7 +113,7 @@ const setupLights = (scene: BABYLON.Scene) => {
 const setupGltf = async (scene: BABYLON.Scene) => {
   const container = await BABYLON.SceneLoader.LoadAssetContainerAsync(
     "./assets/gltf/",
-    "human_06.glb",
+    "human.glb",
     scene
   );
 

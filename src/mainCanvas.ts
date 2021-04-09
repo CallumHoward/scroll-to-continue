@@ -449,7 +449,7 @@ const createMainScene = async (scene: BABYLON.Scene) => {
 
 const initBabylonCanvas = async () => {
   const scene = new BABYLON.Scene(engine);
-  scene.debugLayer.show();
+  // scene.debugLayer.show();
 
   const camera = await createMainScene(scene);
 

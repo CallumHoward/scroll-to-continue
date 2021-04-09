@@ -8,7 +8,6 @@
       body {
         margin: 0;
         width: 100%;
-        background-color: #000;
         position: relative;
         font-family: Helvetica, Arial, sans-serif;
       }
@@ -66,12 +65,26 @@
         opacity: 0;
       }
 
-      .rect {
+      img {
+        max-width: 100%;
+        max-height: 100%;
+      }
+
+      .wgl-rect {
         width: 90%;
         height: 10rem;
         max-width: 40rem;
         background-color: grey;
         margin-bottom: 5rem;
+        padding: 2rem;
+      }
+
+      .wgl-rect:nth-child(odd) {
+        background-color: darkgrey;
+      }
+
+      .wgl-text {
+        margin: 0;
       }
 
       .noselect {
@@ -86,27 +99,32 @@
     </style>
   </head>
   <body>
-    <div class="container">
-      <div class="rect hidden"></div>
-      <div class="rect hidden"></div>
-      <div class="rect hidden"></div>
-      <div class="rect hidden"></div>
-      <div class="rect hidden"></div>
-      <div class="rect hidden"></div>
-      <div class="rect hidden"></div>
-      <div class="rect hidden"></div>
-      <div class="rect hidden"></div>
-      <div class="rect hidden"></div>
-      <div class="rect hidden"></div>
-      <div class="rect hidden"></div>
-      <div class="rect hidden"></div>
-      <div class="rect hidden"></div>
-      <div class="rect hidden"></div>
-      <div class="rect hidden"></div>
-      <div class="rect hidden"></div>
-      <div class="rect hidden"></div>
-      <div class="rect hidden"></div>
-      <div class="rect hidden"></div>
+    <div class="container hidden">
+      <div class="wgl-rect">
+        <img
+          class="wgl-image"
+          src="https://picsum.photos/id/1011/1000/667"
+          alt="sample-image"
+        />
+        <p class="wgl-text">Content</p>
+      </div>
+      <div class="wgl-rect"><p class="wgl-text">Content</p></div>
+      <div class="wgl-rect"><p class="wgl-text">Content</p></div>
+      <div class="wgl-rect"><p class="wgl-text">Content</p></div>
+      <div class="wgl-rect"><p class="wgl-text">Content</p></div>
+      <div class="wgl-rect"><p class="wgl-text">Content</p></div>
+      <div class="wgl-rect"><p class="wgl-text">Content</p></div>
+      <div class="wgl-rect"><p class="wgl-text">Content</p></div>
+      <div class="wgl-rect"><p class="wgl-text">Content</p></div>
+      <div class="wgl-rect">Content</div>
+      <div class="wgl-rect">Content</div>
+      <div class="wgl-rect">Content</div>
+      <div class="wgl-rect">Content</div>
+      <div class="wgl-rect">Content</div>
+      <div class="wgl-rect">Content</div>
+      <div class="wgl-rect">Content</div>
+      <div class="wgl-rect">Content</div>
+      <div class="wgl-rect">Content</div>
     </div>
 
     <div id="subvirtual">

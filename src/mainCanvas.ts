@@ -452,9 +452,17 @@ const initBabylonCanvas = async () => {
   scene.debugLayer.show();
 
   await createMainScene(scene);
+
   // @ts-ignore
-  const divs = [...document.querySelectorAll(".rect")];
-  await createIntroScene(divs, scene, engine, canvas);
+  const cardDivs = [...document.querySelectorAll(".wgl-rect")];
+  // @ts-ignore
+  const images = [...document.querySelectorAll(".wgl-image")];
+  // @ts-ignore
+  const textDivs = [...document.querySelectorAll(".wgl-text")];
+
+  await createIntroScene(cardDivs, images, textDivs, scene, engine, canvas);
+  scene.clearColor = BABYLON.Color4.FromColor3(BABYLON.Color3.White());
+
   engine.runRenderLoop(() => {
     scene.render();
   });

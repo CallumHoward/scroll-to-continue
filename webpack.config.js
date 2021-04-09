@@ -10,7 +10,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 // compress assets
 const CompressionPlugin = require("compression-webpack-plugin");
 // output folder location
-const distFolder = "./dist";
+const distFolder = "./docs";
 
 module.exports = {
   mode: 'development',

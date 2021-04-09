@@ -444,14 +444,23 @@ const createMainScene = async (scene: BABYLON.Scene) => {
 
   scene.addMesh(groundMesh);
 
-  return scene;
+  return camera;
 };
 
 const initBabylonCanvas = async () => {
   const scene = new BABYLON.Scene(engine);
   scene.debugLayer.show();
 
-  await createMainScene(scene);
+  const camera = await createMainScene(scene);
+
+  const nextScene = () => {
+    scene.activeCamera = camera;
+    const sceneColor = BABYLON.Color3.FromHexString("#000010");
+    scene.clearColor = BABYLON.Color4.FromColor3(sceneColor);
+    // scene.fogMode = BABYLON.Scene.FOGMODE_EXP;
+    // scene.fogDensity = 0.02;
+    // scene.fogColor = sceneColor;
+  };
 
   const context = document.querySelector(".js-loop");
   // @ts-ignore
@@ -468,9 +477,9 @@ const initBabylonCanvas = async () => {
     textDivs,
     scene,
     engine,
-    canvas
+    canvas,
+    nextScene
   );
-  scene.clearColor = BABYLON.Color4.FromColor3(BABYLON.Color3.White());
 
   engine.runRenderLoop(() => {
     scene.render();

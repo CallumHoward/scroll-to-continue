@@ -9,7 +9,8 @@ export const createIntroScene = async (
   textEls: HTMLElement[],
   scene: BABYLON.Scene,
   engine: BABYLON.Engine,
-  canvas: HTMLCanvasElement
+  canvas: HTMLCanvasElement,
+  nextScene: () => void
 ) => {
   const cardPlaneBounds: DOMRect[] = new Array(cardDivs.length);
   const cardPlanes: BABYLON.Mesh[] = new Array(cardDivs.length);
@@ -17,11 +18,14 @@ export const createIntroScene = async (
   const imagePlanes: BABYLON.Mesh[] = new Array(cardDivs.length);
   const textPlaneBounds: DOMRect[] = new Array(textEls.length);
   const textPlanes: GUI.TextBlock[] = new Array(textEls.length);
+  const gui = GUI.AdvancedDynamicTexture.CreateFullscreenUI("myUI");
+  scene.clearColor = BABYLON.Color4.FromColor3(BABYLON.Color3.White());
 
   const getScrollPos = () =>
     // @ts-ignore
     (context.pageYOffset || context.scrollTop) - (context.clientTop || 0);
   let prevScrollPos = getScrollPos();
+  let totalScroll = 0;
 
   const createElements = () => {
     const basePlaneMaterial = new BABYLON.StandardMaterial(
@@ -68,7 +72,6 @@ export const createIntroScene = async (
     }
 
     // Text
-    const gui = GUI.AdvancedDynamicTexture.CreateFullscreenUI("myUI");
     for (let i = 0; i < textEls.length; i++) {
       textPlanes[i] = new GUI.TextBlock(
         `${textEls[i].textContent.substring(0, 10)} ...`,
@@ -215,6 +218,20 @@ export const createIntroScene = async (
     setElementsStyle();
   };
 
+  const eventOnScroll = () => {
+    window.requestAnimationFrame(onScroll);
+  };
+
+  const goToNextScene = () => {
+    for (const textPlane of textPlanes) {
+      gui.removeControl(textPlane);
+    }
+    context.removeEventListener("scroll", eventOnScroll);
+    context.classList.add("undisplay");
+
+    nextScene();
+  };
+
   const updateValues = ({ size, scroll }) => {
     if (size.changed) {
       engine.resize();
@@ -227,12 +244,13 @@ export const createIntroScene = async (
   const onScroll = () => {
     const scrollPos = getScrollPos();
     if (prevScrollPos !== scrollPos) {
+      totalScroll += Math.abs(prevScrollPos - scrollPos);
       prevScrollPos = scrollPos;
       setElementsBounds();
       setElementsPosition();
-      if (scrollPos > 5000) {
+      if (totalScroll > 15000) {
         console.log("switching scenes");
-        // TODO change scene
+        goToNextScene();
       }
     }
   };
@@ -240,13 +258,7 @@ export const createIntroScene = async (
   init();
   watchViewport(updateValues);
 
-  context.addEventListener(
-    "scroll",
-    function () {
-      window.requestAnimationFrame(onScroll);
-    },
-    false
-  );
+  context.addEventListener("scroll", eventOnScroll, false);
 
   const hemisphericLight = new BABYLON.HemisphericLight(
     "hemisphericLight",

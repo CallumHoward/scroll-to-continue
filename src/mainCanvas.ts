@@ -343,7 +343,7 @@ const setupPipeline = (scene: BABYLON.Scene, camera: BABYLON.Camera) => {
   });
   gl.intensity = 1;
   gl.referenceMeshToUseItsOwnMaterial(scene.getMeshByName("m_ca01"));
-  // gl.referenceMeshToUseItsOwnMaterial(scene.getMeshByName("data_flow"));
+  gl.referenceMeshToUseItsOwnMaterial(scene.getMeshByName("data_flow"));
 
   // const densities = new Array(50).fill(0);
 

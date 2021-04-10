@@ -352,8 +352,6 @@ export const createIntroScene = async (
       gui.removeControl(textPlane);
     }
     context.removeEventListener("scroll", eventOnScroll);
-    context.classList.add("undisplay");
-
     nextScene();
   };
 

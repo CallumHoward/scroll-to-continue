@@ -52,29 +52,6 @@ const setupCamera = (scene: BABYLON.Scene) => {
   return camera;
 };
 
-const setupEnvironment = (scene: BABYLON.Scene) => {
-  // Environment Texture
-  const hdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(
-    "assets/img/gallery.env",
-    scene
-  );
-  scene.imageProcessingConfiguration.exposure = 0.1;
-  scene.imageProcessingConfiguration.contrast = 1.0;
-  scene.environmentTexture = hdrTexture;
-
-  // Skybox
-  const hdrSkybox = BABYLON.Mesh.CreateBox("hdrSkyBox", 1000.0, scene);
-  const hdrSkyboxMaterial = new BABYLON.PBRMaterial("skyBox", scene);
-  hdrSkyboxMaterial.backFaceCulling = false;
-  hdrSkyboxMaterial.reflectionTexture = hdrTexture.clone();
-  hdrSkyboxMaterial.reflectionTexture.coordinatesMode =
-    BABYLON.Texture.SKYBOX_MODE;
-  hdrSkyboxMaterial.microSurface = 1.0;
-  hdrSkyboxMaterial.disableLighting = true;
-  hdrSkybox.material = hdrSkyboxMaterial;
-  hdrSkybox.infiniteDistance = true;
-};
-
 const setupLights = (scene: BABYLON.Scene) => {
   const light1 = new BABYLON.HemisphericLight(
     "light1",
@@ -203,21 +180,23 @@ const setupBodyInstances = async (scene: BABYLON.Scene) => {
     phoneInstance.setParent(phoneInstanceEmpty);
     phoneInstance.layerMask = 2;
 
-    // Clone animated phone content
-    const phoneNodeClone = (source as BABYLON.Mesh).clone(`${name}_${index}`);
-    phoneNodeClone.setParent(phoneInstanceEmpty);
-    phoneNodeClone.layerMask = 2;
+    if (index < 15) {
+      // Clone animated phone content
+      const phoneNodeClone = (source as BABYLON.Mesh).clone(`${name}_${index}`);
+      phoneNodeClone.setParent(phoneInstanceEmpty);
+      phoneNodeClone.layerMask = 2;
 
-    // Add animations to animation group
-    const cloneChildrenNodes = phoneNodeClone.getChildren(null, true);
-    const iMod = index % phoneAnimGroups.length;
-    const animGroup = phoneAnimGroups[iMod];
-    const animGroupClones = phoneAnimGroupsClones[iMod];
-    for (const { animation, target } of animGroup.targetedAnimations) {
-      const newTarget = cloneChildrenNodes.find((node) =>
-        node.name.endsWith(target.name)
-      );
-      animGroupClones.addTargetedAnimation(animation, newTarget);
+      // Add animations to animation group
+      const cloneChildrenNodes = phoneNodeClone.getChildren(null, true);
+      const iMod = index % phoneAnimGroups.length;
+      const animGroup = phoneAnimGroups[iMod];
+      const animGroupClones = phoneAnimGroupsClones[iMod];
+      for (const { animation, target } of animGroup.targetedAnimations) {
+        const newTarget = cloneChildrenNodes.find((node) =>
+          node.name.endsWith(target.name)
+        );
+        animGroupClones.addTargetedAnimation(animation, newTarget);
+      }
     }
 
     // Move instance to correct location
@@ -324,7 +303,7 @@ const setupPipeline = (scene: BABYLON.Scene, camera: BABYLON.Camera) => {
     // mainTextureFixedSize: 256,
     blurKernelSize: 64,
   });
-  gl.intensity = 2;
+  gl.intensity = 1;
   gl.referenceMeshToUseItsOwnMaterial(scene.getMeshByName("m_ca01"));
 
   // const densities = new Array(50).fill(0);
@@ -344,11 +323,6 @@ const setupPipeline = (scene: BABYLON.Scene, camera: BABYLON.Camera) => {
 const createMainScene = async (scene: BABYLON.Scene) => {
   // scene.collisionsEnabled = true;
   // scene.gravity = new BABYLON.Vector3(0, -0.9, 0);
-  const sceneColor = BABYLON.Color3.FromHexString("#000010");
-  scene.clearColor = BABYLON.Color4.FromColor3(sceneColor);
-  // scene.fogMode = BABYLON.Scene.FOGMODE_EXP;
-  // scene.fogDensity = 0.02;
-  // scene.fogColor = sceneColor;
 
   // Skybox
   const skybox = BABYLON.Mesh.CreateBox("skyBox", 150.0, scene);
@@ -363,7 +337,7 @@ const createMainScene = async (scene: BABYLON.Scene) => {
     "assets/texture/skybox/skybox",
     scene
   );
-  skyboxMaterial.alpha = 0.2;
+  skyboxMaterial.alpha = 0.1;
   skyboxMaterial.reflectionTexture.coordinatesMode =
     BABYLON.Texture.SKYBOX_MODE;
   skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
@@ -374,9 +348,7 @@ const createMainScene = async (scene: BABYLON.Scene) => {
   skybox.layerMask = 2;
 
   const camera = setupCamera(scene);
-  // scene.activeCameras.push(camera);
   setupLights(scene);
-  // setupEnvironment(scene);
   await setupGltf(scene);
   await setupBodyInstances(scene);
 
@@ -428,39 +400,28 @@ const createMainScene = async (scene: BABYLON.Scene) => {
   //   time += engine.getDeltaTime() / 1000;
   // });
 
-  const groundMesh = BABYLON.Mesh.CreateGround("groundMesh", 500, 500, 1);
-  groundMesh.layerMask = 2;
+  // const groundMesh = BABYLON.Mesh.CreateGround("groundMesh", 500, 500, 1);
+  // groundMesh.layerMask = 2;
 
-  const groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
+  // const groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
   // groundMaterial.alpha = 0.9;
-  groundMaterial.diffuseColor = sceneColor;
-  groundMaterial.disableLighting = true;
-  // groundMaterial.emissiveTexture = new BABYLON.NoiseProceduralTexture(
-  //   "perlin",
-  //   256,
-  //   scene
-  // );
-  groundMesh.material = groundMaterial;
-
-  scene.addMesh(groundMesh);
+  // groundMaterial.diffuseColor = sceneColor;
+  // groundMaterial.disableLighting = false;
+  // // groundMaterial.emissiveTexture = new BABYLON.NoiseProceduralTexture(
+  // //   "perlin",
+  // //   256,
+  // //   scene
+  // // );
+  // groundMesh.material = groundMaterial;
 
   return camera;
 };
 
 const initBabylonCanvas = async () => {
   const scene = new BABYLON.Scene(engine);
-  // scene.debugLayer.show();
+  scene.debugLayer.show();
 
   const camera = await createMainScene(scene);
-
-  const nextScene = () => {
-    scene.activeCamera = camera;
-    const sceneColor = BABYLON.Color3.FromHexString("#000010");
-    scene.clearColor = BABYLON.Color4.FromColor3(sceneColor);
-    // scene.fogMode = BABYLON.Scene.FOGMODE_EXP;
-    // scene.fogDensity = 0.02;
-    // scene.fogColor = sceneColor;
-  };
 
   const context = document.querySelector(".js-loop");
   // @ts-ignore
@@ -470,16 +431,28 @@ const initBabylonCanvas = async () => {
   // @ts-ignore
   const textDivs = [...document.querySelectorAll(".wgl-text")];
 
-  await createIntroScene(
-    context,
-    cardDivs,
-    images,
-    textDivs,
-    scene,
-    engine,
-    canvas,
-    nextScene
-  );
+  const nextScene = () => {
+    scene.activeCamera = camera;
+    const sceneColor = BABYLON.Color3.FromHexString("#000F0");
+    scene.clearColor = BABYLON.Color4.FromColor3(sceneColor);
+    scene.fogMode = BABYLON.Scene.FOGMODE_EXP;
+    scene.fogDensity = 0.02;
+    scene.fogColor = BABYLON.Color3.FromHexString("#000000");
+
+    context.classList.add("undisplay");
+  };
+
+  // await createIntroScene(
+  //   context,
+  //   cardDivs,
+  //   images,
+  //   textDivs,
+  //   scene,
+  //   engine,
+  //   canvas,
+  //   nextScene
+  // );
+  nextScene();
 
   engine.runRenderLoop(() => {
     scene.render();

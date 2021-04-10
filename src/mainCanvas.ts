@@ -3,6 +3,7 @@ import "babylonjs-loaders";
 
 import { getGhostMaterial } from "./ghost-material";
 import { createIntroScene } from "./introCanvas";
+import { setupParticleSystem } from "./particle-system";
 import { initPointerLock } from "./pointer-lock";
 
 const canvas = document.getElementById("renderCanvas") as HTMLCanvasElement; // Get the canvas element
@@ -389,6 +390,7 @@ const createMainScene = async (scene: BABYLON.Scene) => {
   setupLights(scene);
   await setupGltf(scene);
   await setupBodyInstances(scene);
+  setupParticleSystem(scene);
 
   // const collisionMesh = gltf.meshes.find((e) => e.name === "CollisionMesh");
   // if (collisionMesh) {

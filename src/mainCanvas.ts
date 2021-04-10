@@ -129,11 +129,35 @@ const setupGltf = async (scene: BABYLON.Scene) => {
   });
   root.dispose();
 
+  const container2 = await BABYLON.SceneLoader.LoadAssetContainerAsync(
+    "./assets/gltf/",
+    "data_flow.glb",
+    scene
+  );
+  container2.addAllToScene();
+  const root2 = container2.meshes.find(({ id }) => id === "__root__");
+
+  // Clean up GLTF container
+  const dataStreamEmpty = new BABYLON.Mesh("dataStreamEmpty", scene);
+  dataStreamEmpty.position.x = -12;
+
+  // Apply material for data stream
+  const dataStreamMaterial = await BABYLON.NodeMaterial.ParseFromSnippetAsync(
+    "#GCEVJ3#1",
+    scene
+  );
+
+  root2.getChildren().map((node: BABYLON.Node) => {
+    node.parent = dataStreamEmpty;
+    (node as BABYLON.Mesh).material = dataStreamMaterial;
+  });
+  root2.dispose();
+
   return container;
 };
 
 const setupBodyInstances = async (scene: BABYLON.Scene) => {
-  // const bodyMesh = gltf.meshes.find((e) => e.name === "m_ca01");
+  (scene.getNodeByName("m_ca01_skeleton") as BABYLON.Mesh).position.z = 2.5;
   const bodyMesh = scene.getMeshByName("m_ca01");
   bodyMesh.layerMask = 2;
 
@@ -148,13 +172,22 @@ const setupBodyInstances = async (scene: BABYLON.Scene) => {
     instance.setParent(bodyInstancesEmpty);
     instance.layerMask = 2;
     instance.scaling.x = -1;
-    instance.position.x = index * 2;
+
+    if (index % 2 === 0) {
+      instance.rotation.y = Math.PI;
+    }
+
+    instance.position.x = index + (index % 2);
   };
 
   const phone = scene.getNodeByName("phone");
   const phoneEmptys = ANIM_NAMES.map((animName) =>
     scene.getNodeByName(`phone_${animName}_empty`)
   );
+  (phone as BABYLON.Mesh).position.z += 2.5;
+  for (const empty of phoneEmptys) {
+    (empty as BABYLON.Mesh).position.z += 2.5;
+  }
   const phoneInstancesEmpty = new BABYLON.Mesh("phoneInstancesEmpty");
 
   // Clone phone animations
@@ -200,10 +233,14 @@ const setupBodyInstances = async (scene: BABYLON.Scene) => {
     }
 
     // Move instance to correct location
-    phoneInstanceEmpty.position.x = index * 2;
+    phoneInstanceEmpty.position.x = index + (index % 2);
+    if (index % 2 === 0) {
+      phoneInstanceEmpty.rotation.y = Math.PI;
+    }
+    // phoneInstanceEmpty.position.z = 2;
   };
 
-  for (let i = 1; i < 30; i++) {
+  for (let i = 0; i < 80 - 1; i++) {
     createBodyInstance(i);
     const offset = i % ANIM_NAMES.length;
     createPhoneInstance(i, phoneEmptys[offset], ANIM_NAMES[offset]);
@@ -305,6 +342,7 @@ const setupPipeline = (scene: BABYLON.Scene, camera: BABYLON.Camera) => {
   });
   gl.intensity = 1;
   gl.referenceMeshToUseItsOwnMaterial(scene.getMeshByName("m_ca01"));
+  // gl.referenceMeshToUseItsOwnMaterial(scene.getMeshByName("data_flow"));
 
   // const densities = new Array(50).fill(0);
 

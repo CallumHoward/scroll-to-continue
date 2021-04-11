@@ -14,7 +14,7 @@ export const createIntroScene = async (
   nextScene: () => void
 ) => {
   const cardPlaneBounds: DOMRect[] = new Array(cardDivs.length);
-  const cardPlanes: BABYLON.Mesh[] = new Array(cardDivs.length);
+  const cardPlanes: GUI.Rectangle[] = new Array(cardDivs.length);
   const imagePlaneBounds: DOMRect[] = new Array(imageEls.length);
   const imagePlanes: BABYLON.Mesh[] = new Array(cardDivs.length);
   const textPlaneBounds: DOMRect[] = new Array(textEls.length);
@@ -64,18 +64,30 @@ export const createIntroScene = async (
 
     // Cards
     for (let i = 0; i < cardDivs.length; i++) {
-      cardPlanes[i] = basePlane.clone(`div_${i}`);
+      // cardPlanes[i] = basePlane.clone(`div_${i}`);
+      cardPlanes[i] = new GUI.Rectangle(`div_${i}`);
+      cardPlanes[i].cornerRadius = 20;
+      cardPlanes[i].color = "#7EB6FF";
+      cardPlanes[i].thickness = 4;
+      cardPlanes[i].background = "green";
+      cardPlanes[i].shadowColor = "#7EB6FF";
+      cardPlanes[i].shadowOffsetX = 0;
+      cardPlanes[i].shadowOffsetY = 0;
+      cardPlanes[i].shadowBlur = 20;
 
       const style = getComputedStyle(cardDivs[i]);
-      const [r, g, b] = [...style.backgroundColor.match(/(\d+)/g)].map((s) =>
-        parseInt(s)
-      );
-      const cardMaterial = basePlaneMaterial.clone(`cardMaterial_${i}`);
-      cardMaterial.diffuseColor = BABYLON.Color3.FromInts(r, g, b);
+      // const [r, g, b] = [...style.backgroundColor.match(/(\d+)/g)].map((s) =>
+      //   parseInt(s)
+      // );
+      // const cardMaterial = basePlaneMaterial.clone(`cardMaterial_${i}`);
+      // cardMaterial.diffuseColor = BABYLON.Color3.FromInts(r, g, b);
 
-      cardPlanes[i].material = cardMaterial;
-      cardPlanes[i].doNotSyncBoundingInfo = true;
-      cardPlanes[i].layerMask = 1;
+      cardPlanes[i].background = style.backgroundColor;
+
+      // cardPlanes[i].material = cardMaterial;
+      // cardPlanes[i].doNotSyncBoundingInfo = true;
+      // cardPlanes[i].layerMask = 1;
+      gui.addControl(cardPlanes[i]);
     }
 
     // Images
@@ -150,8 +162,10 @@ export const createIntroScene = async (
   const setElementsStyle = () => {
     // Cards
     for (let i = 0; i < cardDivs.length; i++) {
-      cardPlanes[i].scaling.x = cardDivs[i].clientWidth;
-      cardPlanes[i].scaling.y = cardDivs[i].clientHeight;
+      // cardPlanes[i].scaling.x = cardDivs[i].clientWidth;
+      // cardPlanes[i].scaling.y = cardDivs[i].clientHeight;
+      cardPlanes[i].widthInPixels = cardDivs[i].clientWidth;
+      cardPlanes[i].heightInPixels = cardDivs[i].clientHeight;
     }
 
     // Images
@@ -199,12 +213,12 @@ export const createIntroScene = async (
   const setElementsPosition = () => {
     // Cards
     for (let i = 0; i < cardDivs.length; i++) {
-      cardPlanes[i].position.y =
-        -cardPlaneBounds[i].height / 2 +
-        canvas.clientHeight / 2 -
-        cardPlaneBounds[i].y +
+      cardPlanes[i].top =
+        cardPlaneBounds[i].height / 2 -
+        canvas.clientHeight / 2 +
+        cardPlaneBounds[i].y -
         (window.scrollY || window.pageYOffset);
-      cardPlanes[i].position.x =
+      cardPlanes[i].left =
         cardPlaneBounds[i].width / 2 -
         canvas.clientWidth / 2 +
         cardPlaneBounds[i].x;
@@ -350,6 +364,9 @@ export const createIntroScene = async (
   const goToNextScene = () => {
     for (const textPlane of textPlanes) {
       gui.removeControl(textPlane);
+    }
+    for (const cardPlane of cardPlanes) {
+      gui.removeControl(cardPlane);
     }
     context.removeEventListener("scroll", eventOnScroll);
     nextScene();

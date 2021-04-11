@@ -2,6 +2,7 @@ import * as BABYLON from "babylonjs";
 import * as GUI from "babylonjs-gui";
 import { watchViewport } from "tornis";
 import { TweenMax } from "gsap";
+import { iOS } from "./utilities";
 
 export const createIntroScene = async (
   context: Element,
@@ -16,7 +17,7 @@ export const createIntroScene = async (
   const cardPlaneBounds: DOMRect[] = new Array(cardDivs.length);
   const cardPlanes: GUI.Rectangle[] = new Array(cardDivs.length);
   const imagePlaneBounds: DOMRect[] = new Array(imageEls.length);
-  const imagePlanes: BABYLON.Mesh[] = new Array(cardDivs.length);
+  const imagePlanes: GUI.Image[] = new Array(cardDivs.length);
   const textPlaneBounds: DOMRect[] = new Array(textEls.length);
   const textPlanes: GUI.TextBlock[] = new Array(textEls.length);
   const gui = GUI.AdvancedDynamicTexture.CreateFullscreenUI("myUI");
@@ -45,8 +46,9 @@ export const createIntroScene = async (
     // @ts-ignore
     (context.pageYOffset || context.scrollTop) - (context.clientTop || 0);
 
-  const MAX_SCROLL = 50000;
+  const MAX_SCROLL = iOS() ? 100000 : 50000;
   const MAX_SCENE_TIME = 60; // seconds
+  let isSwitching = false;
   let prevScrollTime = Date.now();
   let prevScrollPos = getScrollPos();
   let prevVelocity = 0;
@@ -68,12 +70,9 @@ export const createIntroScene = async (
       cardPlanes[i] = new GUI.Rectangle(`div_${i}`);
       cardPlanes[i].cornerRadius = 20;
       cardPlanes[i].color = "#7EB6FF";
-      cardPlanes[i].thickness = 4;
-      cardPlanes[i].background = "green";
+      cardPlanes[i].thickness = 0;
       cardPlanes[i].shadowColor = "#7EB6FF";
-      cardPlanes[i].shadowOffsetX = 0;
-      cardPlanes[i].shadowOffsetY = 0;
-      cardPlanes[i].shadowBlur = 20;
+      cardPlanes[i].shadowBlur = 0;
 
       const style = getComputedStyle(cardDivs[i]);
       // const [r, g, b] = [...style.backgroundColor.match(/(\d+)/g)].map((s) =>
@@ -92,20 +91,19 @@ export const createIntroScene = async (
 
     // Images
     for (let i = 0; i < imageEls.length; i++) {
-      imagePlanes[i] = basePlane.clone(`image_${i}`);
-      imagePlanes[i].position.z = -0.1;
-
-      const imageMaterial = basePlaneMaterial.clone(`imageMaterial_${i}`);
-      const imageTexture = new BABYLON.Texture(
-        imageEls[i].src.replace(window.location.href, ""),
-        scene,
-        true
+      // imagePlanes[i] = basePlane.clone(`image_${i}`);
+      imagePlanes[i] = new GUI.Image(
+        `image_${i}`,
+        imageEls[i].src.replace(window.location.href, "")
       );
-      imageMaterial.diffuseTexture = imageTexture;
 
-      imagePlanes[i].material = imageMaterial;
-      imagePlanes[i].doNotSyncBoundingInfo = true;
-      imagePlanes[i].layerMask = 1;
+      imagePlanes[i].color = "#7EB6FF";
+      imagePlanes[i].shadowColor = "#7EB6FF";
+      imagePlanes[i].shadowBlur = 0;
+      imagePlanes[i].zIndex = 10;
+
+      // imagePlanes[i].position.z = -0.1;
+      gui.addControl(imagePlanes[i]);
     }
 
     // Text
@@ -170,8 +168,8 @@ export const createIntroScene = async (
 
     // Images
     for (let i = 0; i < imageEls.length; i++) {
-      imagePlanes[i].scaling.x = imageEls[i].clientWidth;
-      imagePlanes[i].scaling.y = imageEls[i].clientHeight;
+      imagePlanes[i].widthInPixels = imageEls[i].clientWidth;
+      imagePlanes[i].heightInPixels = imageEls[i].clientHeight;
     }
 
     // Text
@@ -226,12 +224,12 @@ export const createIntroScene = async (
 
     // Images
     for (let i = 0; i < imageEls.length; i++) {
-      imagePlanes[i].position.y =
-        -imagePlaneBounds[i].height / 2 +
-        canvas.clientHeight / 2 -
-        imagePlaneBounds[i].y +
+      imagePlanes[i].top =
+        imagePlaneBounds[i].height / 2 -
+        canvas.clientHeight / 2 +
+        imagePlaneBounds[i].y -
         (window.scrollY || window.pageYOffset);
-      imagePlanes[i].position.x =
+      imagePlanes[i].left =
         imagePlaneBounds[i].width / 2 -
         canvas.clientWidth / 2 +
         imagePlaneBounds[i].x;
@@ -368,9 +366,15 @@ export const createIntroScene = async (
     for (const cardPlane of cardPlanes) {
       gui.removeControl(cardPlane);
     }
+    for (const imagePlane of imagePlanes) {
+      gui.removeControl(imagePlane);
+    }
     context.removeEventListener("scroll", eventOnScroll);
     nextScene();
-    gui.removeControl(blocker);
+
+    setTimeout(() => {
+      gui.removeControl(blocker);
+    }, 250);
   };
 
   const updateValues = ({ size, scroll }) => {
@@ -385,6 +389,7 @@ export const createIntroScene = async (
   const fadeOutToWhite = () => {
     blocker.alpha = 0;
     blocker.background = "White";
+    blocker.zIndex = 999;
     gui.addControl(blocker);
 
     const fadeOut = () => {
@@ -412,17 +417,28 @@ export const createIntroScene = async (
       setElementsBounds();
       setElementsPosition();
       if (totalScroll > MAX_SCROLL / 2) {
-        animateFisheye({ value: prevVelocity / 50 });
+        const factor = Math.min(prevVelocity, 250);
+        animateFisheye({ value: factor / 50 });
+        for (const cardPlane of cardPlanes) {
+          cardPlane.shadowBlur = factor / 5;
+          cardPlane.thickness = factor / 50;
+        }
+        for (const imagePlane of imagePlanes) {
+          imagePlane.shadowBlur = factor / 5;
+          // imagePlane.thickness = factor / 50;
+        }
       }
 
       if (
+        !isSwitching &&
         (totalScroll > MAX_SCROLL ||
           prevScrollTime - initialTime > MAX_SCENE_TIME * 1000) &&
         velocity > 150
       ) {
         console.log("switching scenes");
+        isSwitching = true;
         setTimeout(goToNextScene, 1500);
-        TweenMax.to(fisheyeDistortion, 1.0, { value: 0.5 });
+        TweenMax.to(fisheyeDistortion, 1.5, { value: 0.5 });
         fadeOutToWhite();
       }
     }

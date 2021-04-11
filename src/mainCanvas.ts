@@ -337,7 +337,7 @@ const setupPipeline = (scene: BABYLON.Scene, camera: BABYLON.Camera) => {
 
   // Glow
   const gl = new BABYLON.GlowLayer("glow", scene, {
-    // mainTextureSamples: 1,
+    // mainTextureSamples: 4,
     // mainTextureFixedSize: 256,
     blurKernelSize: 64,
   });
@@ -387,10 +387,7 @@ const createMainScene = async (scene: BABYLON.Scene) => {
   skybox.layerMask = 2;
 
   const camera = setupCamera(scene);
-  setupLights(scene);
   await setupGltf(scene);
-  await setupBodyInstances(scene);
-  setupParticleSystem(scene);
 
   // const collisionMesh = gltf.meshes.find((e) => e.name === "CollisionMesh");
   // if (collisionMesh) {
@@ -424,7 +421,6 @@ const createMainScene = async (scene: BABYLON.Scene) => {
   // s2Text.material = mat;
 
   // setupText(scene);
-  const pipeline = setupPipeline(scene, camera);
 
   // const floorMesh = gltf.meshes.find((e) => e.id === "floor");
   // const reflection = setupReflection(scene, floorMesh, []);
@@ -459,9 +455,10 @@ const createMainScene = async (scene: BABYLON.Scene) => {
 
 const initBabylonCanvas = async () => {
   const scene = new BABYLON.Scene(engine);
-  scene.debugLayer.show();
+  // scene.debugLayer.show();
 
   const camera = await createMainScene(scene);
+  // const camera = setupCamera(scene);
 
   const context = document.querySelector(".js-loop");
   // @ts-ignore
@@ -471,28 +468,33 @@ const initBabylonCanvas = async () => {
   // @ts-ignore
   const textDivs = [...document.querySelectorAll(".wgl-text")];
 
-  const nextScene = () => {
+  const nextScene = async () => {
     scene.activeCamera = camera;
-    const sceneColor = BABYLON.Color3.FromHexString("#000F0");
+    const sceneColor = BABYLON.Color3.FromHexString("#00000");
     scene.clearColor = BABYLON.Color4.FromColor3(sceneColor);
     scene.fogMode = BABYLON.Scene.FOGMODE_EXP;
     scene.fogDensity = 0.02;
     scene.fogColor = BABYLON.Color3.FromHexString("#000000");
 
+    setupLights(scene);
+    await setupBodyInstances(scene);
+    setupParticleSystem(scene);
+    setupPipeline(scene, camera);
+
     context.classList.add("undisplay");
   };
 
-  // await createIntroScene(
-  //   context,
-  //   cardDivs,
-  //   images,
-  //   textDivs,
-  //   scene,
-  //   engine,
-  //   canvas,
-  //   nextScene
-  // );
-  nextScene();
+  await createIntroScene(
+    context,
+    cardDivs,
+    images,
+    textDivs,
+    scene,
+    engine,
+    canvas,
+    nextScene
+  );
+  // nextScene();
 
   engine.runRenderLoop(() => {
     scene.render();

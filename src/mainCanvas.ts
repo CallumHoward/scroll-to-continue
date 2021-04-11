@@ -18,27 +18,27 @@ const setupCamera = (scene: BABYLON.Scene) => {
   // This creates and positions a free camera (non-mesh)
   const camera = new BABYLON.UniversalCamera(
     "Camera",
-    new BABYLON.Vector3(5, 1.5, 0),
+    new BABYLON.Vector3(0, 1, 0),
     scene
   );
   camera.layerMask = 2;
   camera.minZ = 0.1;
-  camera.rotation.set(16, 48, 0);
+  // camera.rotation.set(16, 48, 0);
   initPointerLock(engine.getRenderingCanvas(), camera, blocker);
 
   // camera.fov = 2.024;
 
   // This targets the camera to scene origin
-  camera.setTarget(new BABYLON.Vector3(0, 1, 0));
+  camera.setTarget(new BABYLON.Vector3(2, 1, 0));
 
   // This attaches the camera to the canvas
   camera.attachControl(canvas, true);
 
   // Physics model
   camera.checkCollisions = true;
-  camera.applyGravity = true;
+  // camera.applyGravity = true;
   // camera.speed = 0.035;
-  camera.speed = 0.35;
+  camera.speed = 0.2;
   // console.log("LOG: ", camera.inverseRotationSpeed);
   // camera.inverseRotationSpeed = 0.35;
 
@@ -175,6 +175,19 @@ const setupGltf = async (scene: BABYLON.Scene) => {
   collisionMesh.rotation.y = -180;
   // collisionMesh.material = null;
   // collisionMesh.isVisible = false;
+
+  // Load camera animator
+  const cameraContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync(
+    "./assets/gltf/",
+    "camera.glb",
+    scene
+  );
+  cameraContainer.addAllToScene();
+  const cameraRoot = cameraContainer.meshes.find(({ id }) => id === "__root__");
+  cameraRoot.getChildren().map((node: BABYLON.Node) => {
+    node.parent = null;
+  });
+  cameraRoot.dispose();
 
   return container;
 };
@@ -411,6 +424,9 @@ const createMainScene = async (scene: BABYLON.Scene) => {
   const camera = setupCamera(scene);
   await setupGltf(scene);
 
+  const cameraMesh = scene.getNodeByName("camera_empty_baked");
+  // camera.parent = cameraMesh;
+
   const collisionMesh = scene.getMeshByName("collision");
   if (collisionMesh) {
     collisionMesh.checkCollisions = true;
@@ -477,7 +493,7 @@ const createMainScene = async (scene: BABYLON.Scene) => {
 
 const initBabylonCanvas = async () => {
   const scene = new BABYLON.Scene(engine);
-  scene.debugLayer.show();
+  // scene.debugLayer.show();
 
   const camera = await createMainScene(scene);
   // const camera = setupCamera(scene);
@@ -506,17 +522,17 @@ const initBabylonCanvas = async () => {
     context.classList.add("undisplay");
   };
 
-  // await createIntroScene(
-  //   context,
-  //   cardDivs,
-  //   images,
-  //   textDivs,
-  //   scene,
-  //   engine,
-  //   canvas,
-  //   nextScene
-  // );
-  nextScene();
+  await createIntroScene(
+    context,
+    cardDivs,
+    images,
+    textDivs,
+    scene,
+    engine,
+    canvas,
+    nextScene
+  );
+  // nextScene();
 
   engine.runRenderLoop(() => {
     scene.render();

@@ -2,11 +2,12 @@ import * as BABYLON from "babylonjs";
 
 export const setupParticleSystem = (scene: BABYLON.Scene) => {
   // Create a particle system
-  var surfaceParticles = new BABYLON.ParticleSystem(
+  const surfaceParticles = new BABYLON.ParticleSystem(
     "surfaceParticles",
     16000,
     scene
   );
+  surfaceParticles.layerMask = 2;
 
   // Texture of each particle
   surfaceParticles.particleTexture = new BABYLON.Texture(
@@ -17,16 +18,17 @@ export const setupParticleSystem = (scene: BABYLON.Scene) => {
   const particleSystemPosition = new BABYLON.Vector3(-12, 6, 0);
 
   // Create core sphere
-  var coreSphere = BABYLON.MeshBuilder.CreateSphere(
+  const coreSphere = BABYLON.MeshBuilder.CreateSphere(
     "coreSphere",
     { diameter: 1.3, segments: 16 },
     scene
   );
   coreSphere.position = particleSystemPosition;
   coreSphere.scaling = new BABYLON.Vector3(2, 2, 2);
+  coreSphere.layerMask = 2;
 
   // Create core material
-  var coreMat = new BABYLON.StandardMaterial("coreMat", scene);
+  const coreMat = new BABYLON.StandardMaterial("coreMat", scene);
   coreMat.diffuseColor = BABYLON.Color3.Black();
   coreMat.specularColor = BABYLON.Color3.Black();
   coreMat.emissiveColor = BABYLON.Color3.FromHexString("#667782");
@@ -43,7 +45,7 @@ export const setupParticleSystem = (scene: BABYLON.Scene) => {
   surfaceParticles.maxInitialRotation = 2 * Math.PI;
 
   // Where the sun particles come from
-  var sunEmitter = new BABYLON.SphereParticleEmitter();
+  const sunEmitter = new BABYLON.SphereParticleEmitter();
   sunEmitter.radius = 1;
   sunEmitter.radiusRange = 0; // emit only from shape surface
 
@@ -79,8 +81,8 @@ export const setupParticleSystem = (scene: BABYLON.Scene) => {
   surfaceParticles.isBillboardBased = false;
 
   surfaceParticles.updateFunction = function (particles) {
-    for (var index = 0; index < particles.length; index++) {
-      var particle = particles[index];
+    for (let index = 0; index < particles.length; index++) {
+      let particle = particles[index];
       particle.age += this._scaledUpdateSpeed;
 
       if (particle.age >= particle.lifeTime) {

@@ -18,12 +18,11 @@ const setupCamera = (scene: BABYLON.Scene) => {
   // This creates and positions a free camera (non-mesh)
   const camera = new BABYLON.UniversalCamera(
     "Camera",
-    new BABYLON.Vector3(0, 1.5, -3),
+    new BABYLON.Vector3(5, 1.5, 0),
     scene
   );
   camera.layerMask = 2;
   camera.minZ = 0.1;
-  camera.position.set(-2.88, 4.16, -10.15);
   camera.rotation.set(16, 48, 0);
   initPointerLock(engine.getRenderingCanvas(), camera, blocker);
 
@@ -37,9 +36,11 @@ const setupCamera = (scene: BABYLON.Scene) => {
 
   // Physics model
   camera.checkCollisions = true;
-  camera.applyGravity = false;
+  camera.applyGravity = true;
   // camera.speed = 0.035;
   camera.speed = 0.35;
+  // console.log("LOG: ", camera.inverseRotationSpeed);
+  // camera.inverseRotationSpeed = 0.35;
 
   // Key controls for WASD and arrows
   camera.keysUp = [87, 38];
@@ -130,6 +131,7 @@ const setupGltf = async (scene: BABYLON.Scene) => {
   });
   root.dispose();
 
+  // Load data flow asset
   const container2 = await BABYLON.SceneLoader.LoadAssetContainerAsync(
     "./assets/gltf/",
     "data_flow.glb",
@@ -153,6 +155,26 @@ const setupGltf = async (scene: BABYLON.Scene) => {
     (node as BABYLON.Mesh).material = dataStreamMaterial;
   });
   root2.dispose();
+
+  // Load collision
+  const collisionContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync(
+    "./assets/gltf/",
+    "collision.glb",
+    scene
+  );
+  collisionContainer.addAllToScene();
+  const collisionRoot = collisionContainer.meshes.find(
+    ({ id }) => id === "__root__"
+  );
+  collisionRoot.getChildren().map((node: BABYLON.Node) => {
+    node.parent = null;
+  });
+  collisionRoot.dispose();
+  const collisionMesh = scene.getMeshByName("collision");
+  collisionMesh.position.x = -12;
+  collisionMesh.rotation.y = -180;
+  // collisionMesh.material = null;
+  // collisionMesh.isVisible = false;
 
   return container;
 };
@@ -360,8 +382,8 @@ const setupPipeline = (scene: BABYLON.Scene, camera: BABYLON.Camera) => {
 };
 
 const createMainScene = async (scene: BABYLON.Scene) => {
-  // scene.collisionsEnabled = true;
-  // scene.gravity = new BABYLON.Vector3(0, -0.9, 0);
+  scene.collisionsEnabled = true;
+  scene.gravity = new BABYLON.Vector3(0, -0.9, 0);
 
   // Skybox
   const skybox = BABYLON.Mesh.CreateBox("skyBox", 150.0, scene);
@@ -389,11 +411,11 @@ const createMainScene = async (scene: BABYLON.Scene) => {
   const camera = setupCamera(scene);
   await setupGltf(scene);
 
-  // const collisionMesh = gltf.meshes.find((e) => e.name === "CollisionMesh");
-  // if (collisionMesh) {
-  //   collisionMesh.checkCollisions = true;
-  //   collisionMesh.visibility = 0;
-  // }
+  const collisionMesh = scene.getMeshByName("collision");
+  if (collisionMesh) {
+    collisionMesh.checkCollisions = true;
+    collisionMesh.visibility = 0;
+  }
   // const s1Bounds = gltf.meshes.find((e) => e.name === "S1Bounds");
   // if (s1Bounds) {
   //   s1Bounds.visibility = 0;
@@ -455,7 +477,7 @@ const createMainScene = async (scene: BABYLON.Scene) => {
 
 const initBabylonCanvas = async () => {
   const scene = new BABYLON.Scene(engine);
-  // scene.debugLayer.show();
+  scene.debugLayer.show();
 
   const camera = await createMainScene(scene);
   // const camera = setupCamera(scene);
@@ -484,17 +506,17 @@ const initBabylonCanvas = async () => {
     context.classList.add("undisplay");
   };
 
-  await createIntroScene(
-    context,
-    cardDivs,
-    images,
-    textDivs,
-    scene,
-    engine,
-    canvas,
-    nextScene
-  );
-  // nextScene();
+  // await createIntroScene(
+  //   context,
+  //   cardDivs,
+  //   images,
+  //   textDivs,
+  //   scene,
+  //   engine,
+  //   canvas,
+  //   nextScene
+  // );
+  nextScene();
 
   engine.runRenderLoop(() => {
     scene.render();

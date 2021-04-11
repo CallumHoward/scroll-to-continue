@@ -370,6 +370,7 @@ export const createIntroScene = async (
     }
     context.removeEventListener("scroll", eventOnScroll);
     nextScene();
+    gui.removeControl(blocker);
   };
 
   const updateValues = ({ size, scroll }) => {
@@ -387,11 +388,9 @@ export const createIntroScene = async (
     gui.addControl(blocker);
 
     const fadeOut = () => {
-      blocker.alpha += 0.025;
+      blocker.alpha += 0.02;
       if (blocker.alpha > 1) {
         scene.unregisterBeforeRender(fadeOut);
-        blocker.alpha = 0;
-        gui.removeControl(blocker);
       }
     };
     scene.registerBeforeRender(fadeOut);
@@ -417,8 +416,9 @@ export const createIntroScene = async (
       }
 
       if (
-        totalScroll > MAX_SCROLL ||
-        prevScrollTime - initialTime > MAX_SCENE_TIME * 1000
+        (totalScroll > MAX_SCROLL ||
+          prevScrollTime - initialTime > MAX_SCENE_TIME * 1000) &&
+        velocity > 150
       ) {
         console.log("switching scenes");
         setTimeout(goToNextScene, 1500);

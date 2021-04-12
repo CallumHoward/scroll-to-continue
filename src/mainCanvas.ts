@@ -29,7 +29,7 @@ const setupCamera = (scene: BABYLON.Scene) => {
   // camera.fov = 2.024;
 
   // This targets the camera to scene origin
-  camera.setTarget(new BABYLON.Vector3(2, 1, 0));
+  // camera.setTarget(new BABYLON.Vector3(2, 1, 0));
 
   // This attaches the camera to the canvas
   camera.attachControl(canvas, true);
@@ -193,7 +193,8 @@ const setupGltf = async (scene: BABYLON.Scene) => {
 };
 
 const setupBodyInstances = async (scene: BABYLON.Scene) => {
-  (scene.getNodeByName("m_ca01_skeleton") as BABYLON.Mesh).position.z = 2.5;
+  // (scene.getNodeByName("m_ca01_skeleton") as BABYLON.Mesh).position.z = 2.5;
+  // scene.getMeshByName("m_ca01").position.z = 2.5;
   const bodyMesh = scene.getMeshByName("m_ca01");
   bodyMesh.layerMask = 2;
 
@@ -202,18 +203,21 @@ const setupBodyInstances = async (scene: BABYLON.Scene) => {
   bodyMesh.material = ghostMaterial;
 
   const bodyInstancesEmpty = new BABYLON.Mesh("bodyInstancesEmpty");
+  bodyInstancesEmpty.position.z = 2.5;
   const createBodyInstance = (index: number) => {
     const instance = (bodyMesh as BABYLON.Mesh).createInstance(`body_${index}`);
     // const instance = bodyMesh.clone(`body_${index}`, bodyMesh.parent);
     instance.setParent(bodyInstancesEmpty);
     instance.layerMask = 2;
     instance.scaling.x = -1;
+    instance.position.z = 0;
 
     if (index % 2 === 0) {
+      instance.position.z = -5;
       instance.rotation.y = Math.PI;
     }
 
-    instance.position.x = index + (index % 2);
+    instance.position.x = index - (index % 2);
   };
 
   const phone = scene.getNodeByName("phone");
@@ -225,6 +229,8 @@ const setupBodyInstances = async (scene: BABYLON.Scene) => {
     (empty as BABYLON.Mesh).position.z += 2.5;
   }
   const phoneInstancesEmpty = new BABYLON.Mesh("phoneInstancesEmpty");
+
+  scene.getMeshByName("m_ca01").isVisible = false;
 
   // Clone phone animations
   const phoneAnimGroups = ANIM_NAMES.map((name) =>
@@ -276,7 +282,7 @@ const setupBodyInstances = async (scene: BABYLON.Scene) => {
     // phoneInstanceEmpty.position.z = 2;
   };
 
-  for (let i = 0; i < 80 - 1; i++) {
+  for (let i = 0; i < 80; i++) {
     createBodyInstance(i);
     const offset = i % ANIM_NAMES.length;
     createPhoneInstance(i, phoneEmptys[offset], ANIM_NAMES[offset]);
@@ -395,7 +401,7 @@ const setupPipeline = (scene: BABYLON.Scene, camera: BABYLON.Camera) => {
 };
 
 const createMainScene = async (scene: BABYLON.Scene) => {
-  scene.collisionsEnabled = true;
+  // scene.collisionsEnabled = true;
   scene.gravity = new BABYLON.Vector3(0, -0.9, 0);
 
   // Skybox
@@ -493,7 +499,7 @@ const createMainScene = async (scene: BABYLON.Scene) => {
 
 const initBabylonCanvas = async () => {
   const scene = new BABYLON.Scene(engine);
-  // scene.debugLayer.show();
+  scene.debugLayer.show();
 
   const camera = await createMainScene(scene);
   // const camera = setupCamera(scene);
@@ -522,17 +528,17 @@ const initBabylonCanvas = async () => {
     context.classList.add("undisplay");
   };
 
-  await createIntroScene(
-    context,
-    cardDivs,
-    images,
-    textDivs,
-    scene,
-    engine,
-    canvas,
-    nextScene
-  );
-  // nextScene();
+  // await createIntroScene(
+  //   context,
+  //   cardDivs,
+  //   images,
+  //   textDivs,
+  //   scene,
+  //   engine,
+  //   canvas,
+  //   nextScene
+  // );
+  nextScene();
 
   engine.runRenderLoop(() => {
     scene.render();

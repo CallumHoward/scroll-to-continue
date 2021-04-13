@@ -43,6 +43,84 @@
         -webkit-overflow-scrolling: touch;
       }
 
+      #landing-container {
+        position: fixed;
+        z-index: 99;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        overflow-y: scroll;
+      }
+
+      .landing-no-scroll {
+        height: 100vh !important;
+      }
+
+      #landing {
+        height: 200vh;
+      }
+
+      #end-container {
+        position: fixed;
+        z-index: 88;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        overflow-y: scroll;
+      }
+
+      #landing-inner,
+      #end-screen {
+        color: #242f49;
+        background: rgb(36, 47, 73);
+        background: linear-gradient(
+          180deg,
+          rgba(36, 47, 73, 1) 0%,
+          rgba(160, 209, 251, 1) 77%,
+          rgba(220, 244, 254, 1) 100%
+        );
+        height: 100vh;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+      }
+
+      #landing::-webkit-scrollbar {
+        display: none;
+      }
+
+      #landing.active {
+        transform: translateY(-60vh);
+      }
+
+      #landing-text-loading {
+        transition: opacity 0.5s ease 0s;
+        opacity: 1;
+      }
+
+      #landing-text-title {
+        transition: opacity 0.5s ease 0.75s;
+        opacity: 1;
+      }
+
+      #landing-carret {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+      }
+
+      #landing-carret img {
+        filter: invert(16%) sepia(11%) saturate(2547%) hue-rotate(184deg)
+          brightness(92%) contrast(90%);
+        opacity: 0.8;
+      }
+
       section {
         position: relative;
         text-align: center;
@@ -62,7 +140,6 @@
       }
 
       #blocker {
-        visibility: hidden;
         overflow: hidden;
         position: absolute;
         z-index: 99;
@@ -77,7 +154,7 @@
         pointer-events: none;
       }
 
-      #landing-cta {
+      #instructions {
         color: white;
         text-align: center;
       }
@@ -101,8 +178,15 @@
         flex-direction: column;
       }
 
-      .hidden {
+      .hidden,
+      #landing-text-loading.hidden,
+      #landing-text-title.hidden {
         opacity: 0;
+      }
+
+      #landing-text-loading,
+      #landing-text-title {
+        position: absolute;
       }
 
       .undisplay {
@@ -119,6 +203,24 @@
           max-width: 640px;
           max-height: 640px;
         }
+      }
+
+      @media screen and (min-width: 40.5em) {
+        .mobile-only {
+          display: none;
+        }
+      }
+
+      @media screen and (max-width: 40.5em) {
+        .desktop-only {
+          display: none;
+        }
+      }
+
+      .touch-icon {
+        filter: invert(100%);
+        width: 50px;
+        color: white;
       }
 
       .wgl-rect {
@@ -152,17 +254,114 @@
 
   <body>
     <div id="subvirtual">
-      <!-- <div id="blocker" class="noselect"> -->
-      <!--   <div id="landing-cta"> -->
-      <!--     <img alt="origin-logo" src="assets/img/origin.svg" /> -->
-      <!--     <span> -->
-      <!--       <h1>ORIGIN (VIRTUAL)</h1> -->
-      <!--       <h3>Click to begin</h3> -->
-      <!--     </span> -->
-      <!--   </div> -->
-      <!-- </div> -->
+      <div id="blocker" class="hidden noselect">
+        <div id="instructions">
+          <div class="mobile-only">
+            <img
+              class="touch-icon"
+              alt="swipe-up-down"
+              src="assets/icons/drag.png"
+            />
+            <h3>Swipe and hold up/down to move</h3>
+          </div>
+          <div class="mobile-only">
+            <img
+              class="touch-icon"
+              width="50px"
+              alt="swipe-left-right"
+              src="assets/icons/swipe.png"
+            />
+            <h3>Swipe and hold left/right to turn</h3>
+          </div>
+          <div class="mobile-only">
+            <img
+              class="touch-icon"
+              alt="two-finger-drag"
+              src="assets/icons/tap.png"
+            />
+            <h3>Two finger drag to look</h3>
+          </div>
+          <div class="desktop-only">
+            <span>
+              <img
+                class="touch-icon"
+                alt="wasd-keys"
+                src="assets/icons/wasd.png"
+              />
+              <img
+                class="touch-icon"
+                alt="arrow-keys"
+                src="assets/icons/arrows.png"
+              />
+            </span>
+            <h3>WASD or Arrow keys to move</h3>
+          </div>
+          <div class="desktop-only">
+            <br />
+            <img class="touch-icon" alt="esc-key" src="assets/icons/esc.png" />
+            <h3>Esc to escape</h3>
+          </div>
+          <br />
+          <br />
+          <div class="mobile-only">
+            <p>Tap to begin</p>
+          </div>
+          <div class="desktop-only">
+            <img class="touch-icon" alt="click" src="assets/icons/click.png" />
+            <h3>Click to begin</h3>
+          </div>
+        </div>
+      </div>
 
       <canvas id="renderCanvas"></canvas>
+    </div>
+
+    <div id="landing-container" class="noselect">
+      <div id="landing" class="landing-no-scroll">
+        <div id="landing-inner">
+          <h1 id="landing-text-loading">Loading...</h1>
+          <h1 id="landing-text-title" class="hidden">Scroll To Continue</h1>
+          <div id="landing-carret">
+            <img
+              class="touch-icon"
+              alt="carret-down"
+              src="assets/icons/caret-down.svg"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="end-container" class="undisplay">
+      <div id="end-screen">
+        <h1 id="end-title">Scroll To Continue</h1>
+        <div>
+          <p>Concept and programming</p>
+        </div>
+        <div>
+          <h2>Callum Howard</h2>
+        </div>
+        <div>
+          <p>3D assets</p>
+        </div>
+        <div>
+          <h2>Jane Fan</h2>
+        </div>
+        <br />
+        <div>
+          <h4>Special thanks</h4>
+        </div>
+        <div>
+          <p>Jorge Pablo Martínez - Shader resources</p>
+        </div>
+        <div>
+          <p>Freepik, Darius Dan, Pixel perfect - Icons</p>
+        </div>
+        <br />
+        <div>
+          <h4>Created with the support of 4A Digital</h4>
+        </div>
+      </div>
     </div>
 
     <main role="main" class="Loop js-loop hidden">

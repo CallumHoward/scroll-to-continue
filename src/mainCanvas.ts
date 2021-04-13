@@ -25,6 +25,8 @@ const setupCamera = (scene: BABYLON.Scene) => {
   camera.minZ = 0.1;
   // camera.rotation.set(16, 48, 0);
   initPointerLock(engine.getRenderingCanvas(), camera, blocker);
+  // @ts-ignore
+  camera.inputs.attached["touch"].touchAngularSensibility = 10000;
 
   // camera.fov = 2.024;
 

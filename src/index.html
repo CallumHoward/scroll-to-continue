@@ -61,7 +61,18 @@
         height: 200vh;
       }
 
-      #landing-inner {
+      #end-container {
+        position: fixed;
+        z-index: 88;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        overflow-y: scroll;
+      }
+
+      #landing-inner,
+      #end-screen {
         color: #242f49;
         background: rgb(36, 47, 73);
         background: linear-gradient(
@@ -75,6 +86,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
+        flex-direction: column;
       }
 
       #landing::-webkit-scrollbar {
@@ -316,6 +328,38 @@
               src="assets/icons/caret-down.svg"
             />
           </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="end-container" class="undisplay">
+      <div id="end-screen">
+        <h1 id="end-title">Scroll To Continue</h1>
+        <div>
+          <p>Concept and programming</p>
+        </div>
+        <div>
+          <h2>Callum Howard</h2>
+        </div>
+        <div>
+          <p>3D assets</p>
+        </div>
+        <div>
+          <h2>Jane Fan</h2>
+        </div>
+        <br />
+        <div>
+          <h4>Special thanks</h4>
+        </div>
+        <div>
+          <p>Jorge Pablo Martínez - Shader resources</p>
+        </div>
+        <div>
+          <p>Freepik, Darius Dan, Pixel perfect - Icons</p>
+        </div>
+        <br />
+        <div>
+          <h4>Created with the support of 4A Digital</h4>
         </div>
       </div>
     </div>

@@ -56,7 +56,7 @@ const setupCamera = (scene: BABYLON.Scene) => {
   camera.checkCollisions = true;
   camera.applyGravity = true;
   // camera.speed = 0.035;
-  camera.speed = 0.08;
+  camera.speed = 0.05;
   // console.log("LOG: ", camera.inverseRotationSpeed);
   // camera.inverseRotationSpeed = 0.35;
 
@@ -545,7 +545,7 @@ const setupSequencing = (scene: BABYLON.Scene, camera: BABYLON.Camera) => {
     if (
       !isSecondInstanceShown &&
       firstMoveTime !== sceneLoadTime &&
-      Date.now() - firstMoveTime > 10 * 1000
+      Date.now() - firstMoveTime > 8 * 1000
     ) {
       if (3.38 < rotation && rotation < 6 && camera.position.x < 13) {
         // show second instance
@@ -613,13 +613,17 @@ const setupSequencing = (scene: BABYLON.Scene, camera: BABYLON.Camera) => {
     if (isSixthStage && camera.fov > 0.1) {
       camera.fov -= 0.002;
       fadeOutToWhite(scene);
+      setTimeout(() => {
+        document.getElementById("end-container").classList.remove("undisplay");
+        canvas.classList.add("undisplay");
+      }, 3000);
     }
   });
 };
 
 const initBabylonCanvas = async () => {
   const scene = new BABYLON.Scene(engine);
-  scene.debugLayer.show();
+  // scene.debugLayer.show();
 
   const camera = await createMainScene(scene);
   // const camera = setupCamera(scene);

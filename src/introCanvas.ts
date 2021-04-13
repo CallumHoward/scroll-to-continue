@@ -46,7 +46,7 @@ export const createIntroScene = async (
     // @ts-ignore
     (context.pageYOffset || context.scrollTop) - (context.clientTop || 0);
 
-  const MAX_SCROLL = iOS() ? 100000 : 50000;
+  const MAX_SCROLL = iOS() ? 100000 : 60000;
   const MAX_SCENE_TIME = 60; // seconds
   let isSwitching = false;
   let prevScrollTime = Date.now();

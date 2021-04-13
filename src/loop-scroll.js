@@ -60,18 +60,26 @@ function scrollUpdate() {
 
 function init() {
   // Handle landing cover
-  const landingContainer = document.getElementById("landing-container");
-  const onScrollLanding = () => {
-    const scrollBottom = Math.round(
-      landingContainer.scrollTop +
+  const handleLandingCover = () => {
+    const landingContainer = document.getElementById("landing-container");
+    const landing = document.getElementById("landing");
+    const landingTextLoading = document.getElementById("landing-text-loading");
+    const landingTextTitle = document.getElementById("landing-text-title");
+    const onScrollLanding = () => {
+      const scrollBottom = Math.round(
+        landingContainer.scrollTop +
         landingContainer.getBoundingClientRect().height
-    );
-    if (scrollBottom === landingContainer.scrollHeight) {
-      landingContainer.style.display = "none";
-      landingContainer.removeEventListener("scroll", onScrollLanding);
+      );
+      if (scrollBottom === landingContainer.scrollHeight) {
+        landingContainer.style.display = "none";
+        landingContainer.removeEventListener("scroll", onScrollLanding);
+      }
     }
+    landingContainer.addEventListener("scroll", onScrollLanding);
+    landing.classList.remove("landing-no-scroll");
+    landingTextLoading.classList.add("hidden");
+    landingTextTitle.classList.remove("hidden");
   }
-  landingContainer.addEventListener("scroll", onScrollLanding);
 
   // When images load
   Promise.all(
@@ -89,6 +97,7 @@ function init() {
       console.log("some images failed to load, all finished loading");
     }
     reCalc();
+    handleLandingCover();
   });
 
   reCalc();

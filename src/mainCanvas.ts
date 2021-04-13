@@ -13,12 +13,13 @@ const engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engi
 const ANIM_NAMES = ["fb", "insta", "tinder"];
 const ANIM_LEN = 615;
 const FPS = 36;
+const FIRST_INSTANCE = 13;
 
 const setupCamera = (scene: BABYLON.Scene) => {
   // This creates and positions a free camera (non-mesh)
   const camera = new BABYLON.UniversalCamera(
     "Camera",
-    new BABYLON.Vector3(0, 1, 0),
+    new BABYLON.Vector3(12, 1.3, 3.52),
     scene
   );
   camera.layerMask = 2;
@@ -31,16 +32,18 @@ const setupCamera = (scene: BABYLON.Scene) => {
   // camera.fov = 2.024;
 
   // This targets the camera to scene origin
-  // camera.setTarget(new BABYLON.Vector3(2, 1, 0));
+  camera.setTarget(new BABYLON.Vector3(11.8, 1.48, 2.54));
+  // const camZ = { value: camera.position.z };
+  // TweenMax.to(camZ, 10, { value: 4.8 });
 
   // This attaches the camera to the canvas
   camera.attachControl(canvas, true);
 
   // Physics model
   camera.checkCollisions = true;
-  // camera.applyGravity = true;
+  camera.applyGravity = true;
   // camera.speed = 0.035;
-  camera.speed = 0.2;
+  camera.speed = 0.08;
   // console.log("LOG: ", camera.inverseRotationSpeed);
   // camera.inverseRotationSpeed = 0.35;
 
@@ -158,6 +161,8 @@ const setupGltf = async (scene: BABYLON.Scene) => {
   });
   root2.dispose();
 
+  dataStreamEmpty.setEnabled(false);
+
   // Load collision
   const collisionContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync(
     "./assets/gltf/",
@@ -214,6 +219,10 @@ const setupBodyInstances = async (scene: BABYLON.Scene) => {
     instance.scaling.x = -1;
     instance.position.z = 0;
 
+    if (index !== FIRST_INSTANCE) {
+      instance.isVisible = false;
+    }
+
     if (index % 2 === 0) {
       instance.position.z = -5;
       instance.rotation.y = Math.PI;
@@ -257,7 +266,7 @@ const setupBodyInstances = async (scene: BABYLON.Scene) => {
     phoneInstance.setParent(phoneInstanceEmpty);
     phoneInstance.layerMask = 2;
 
-    if (index < 15) {
+    if (index < 20) {
       // Clone animated phone content
       const phoneNodeClone = (source as BABYLON.Mesh).clone(`${name}_${index}`);
       phoneNodeClone.setParent(phoneInstanceEmpty);
@@ -280,6 +289,10 @@ const setupBodyInstances = async (scene: BABYLON.Scene) => {
     phoneInstanceEmpty.position.x = index + (index % 2);
     if (index % 2 === 0) {
       phoneInstanceEmpty.rotation.y = Math.PI;
+    }
+
+    if (index !== FIRST_INSTANCE - 2) {
+      phoneInstanceEmpty.setEnabled(false);
     }
     // phoneInstanceEmpty.position.z = 2;
   };
@@ -403,7 +416,7 @@ const setupPipeline = (scene: BABYLON.Scene, camera: BABYLON.Camera) => {
 };
 
 const createMainScene = async (scene: BABYLON.Scene) => {
-  // scene.collisionsEnabled = true;
+  scene.collisionsEnabled = true;
   scene.gravity = new BABYLON.Vector3(0, -0.9, 0);
 
   // Skybox
@@ -419,7 +432,7 @@ const createMainScene = async (scene: BABYLON.Scene) => {
     "assets/texture/skybox/skybox",
     scene
   );
-  skyboxMaterial.alpha = 0.1;
+  skyboxMaterial.alpha = 0.2;
   skyboxMaterial.reflectionTexture.coordinatesMode =
     BABYLON.Texture.SKYBOX_MODE;
   skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
@@ -440,6 +453,7 @@ const createMainScene = async (scene: BABYLON.Scene) => {
     collisionMesh.checkCollisions = true;
     collisionMesh.visibility = 0;
   }
+  collisionMesh.scaling.z *= 1.5;
   // const s1Bounds = gltf.meshes.find((e) => e.name === "S1Bounds");
   // if (s1Bounds) {
   //   s1Bounds.visibility = 0;
@@ -516,7 +530,7 @@ const initBabylonCanvas = async () => {
 
   const nextScene = async () => {
     scene.activeCamera = camera;
-    const sceneColor = BABYLON.Color3.FromHexString("#00000");
+    const sceneColor = BABYLON.Color3.FromHexString("#000000");
     scene.clearColor = BABYLON.Color4.FromColor3(sceneColor);
     scene.fogMode = BABYLON.Scene.FOGMODE_EXP;
     scene.fogDensity = 0.02;
@@ -524,7 +538,7 @@ const initBabylonCanvas = async () => {
 
     setupLights(scene);
     await setupBodyInstances(scene);
-    setupParticleSystem(scene);
+    // setupParticleSystem(scene);
     setupPipeline(scene, camera);
 
     context.classList.add("undisplay");

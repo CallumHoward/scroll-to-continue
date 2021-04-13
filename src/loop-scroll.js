@@ -70,7 +70,7 @@ function init() {
         landingContainer.scrollTop +
         landingContainer.getBoundingClientRect().height
       );
-      if (scrollBottom === landingContainer.scrollHeight) {
+      if (Math.abs(scrollBottom - landingContainer.scrollHeight) < 10) {
         landingContainer.style.display = "none";
         landingContainer.removeEventListener("scroll", onScrollLanding);
       }

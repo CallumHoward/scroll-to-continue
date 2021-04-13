@@ -62,7 +62,6 @@
       }
 
       #blocker {
-        visibility: hidden;
         overflow: hidden;
         position: absolute;
         z-index: 99;
@@ -121,6 +120,24 @@
         }
       }
 
+      @media screen and (min-width: 40.5em) {
+        .mobile-only {
+          display: none;
+        }
+      }
+
+      @media screen and (max-width: 40.5em) {
+        .desktop-only {
+          display: none;
+        }
+      }
+
+      .touch-icon {
+        filter: invert(100%);
+        width: 50px;
+        color: white;
+      }
+
       .wgl-rect {
         width: 90%;
         height: 10rem;
@@ -152,15 +169,64 @@
 
   <body>
     <div id="subvirtual">
-      <!-- <div id="blocker" class="noselect"> -->
-      <!--   <div id="landing-cta"> -->
-      <!--     <img alt="origin-logo" src="assets/img/origin.svg" /> -->
-      <!--     <span> -->
-      <!--       <h1>ORIGIN (VIRTUAL)</h1> -->
-      <!--       <h3>Click to begin</h3> -->
-      <!--     </span> -->
-      <!--   </div> -->
-      <!-- </div> -->
+      <div id="blocker" class="noselect">
+        <div id="landing-cta">
+          <div class="mobile-only">
+            <img
+              class="touch-icon"
+              alt="swipe-up-down"
+              src="assets/icons/drag.png"
+            />
+            <h3>Swipe and hold up/down to move</h3>
+          </div>
+          <div class="mobile-only">
+            <img
+              class="touch-icon"
+              width="50px"
+              alt="swipe-left-right"
+              src="assets/icons/swipe.png"
+            />
+            <h3>Swipe and hold left/right to turn</h3>
+          </div>
+          <div class="mobile-only">
+            <img
+              class="touch-icon"
+              alt="two-finger-drag"
+              src="assets/icons/tap.png"
+            />
+            <h3>Two finger drag to look</h3>
+          </div>
+          <div class="desktop-only">
+            <span>
+              <img
+                class="touch-icon"
+                alt="wasd-keys"
+                src="assets/icons/wasd.png"
+              />
+              <img
+                class="touch-icon"
+                alt="arrow-keys"
+                src="assets/icons/arrows.png"
+              />
+            </span>
+            <h3>WASD or Arrow keys to move</h3>
+          </div>
+          <div class="desktop-only">
+            <br />
+            <img class="touch-icon" alt="esc-key" src="assets/icons/esc.png" />
+            <h3>Esc to escape</h3>
+          </div>
+          <br />
+          <br />
+          <div class="mobile-only">
+            <p>Tap to begin</p>
+          </div>
+          <div class="desktop-only">
+            <img class="touch-icon" alt="click" src="assets/icons/click.png" />
+            <h3>Click to begin</h3>
+          </div>
+        </div>
+      </div>
 
       <canvas id="renderCanvas"></canvas>
     </div>

@@ -43,6 +43,37 @@
         -webkit-overflow-scrolling: touch;
       }
 
+      #landing-container {
+        position: fixed;
+        z-index: 99;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        overflow-y: scroll;
+      }
+
+      #landing {
+        height: 200vh;
+      }
+
+      #landing-inner {
+        background: teal;
+        height: 50%;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #landing::-webkit-scrollbar {
+        display: none;
+      }
+
+      #landing.active {
+        transform: translateY(-60vh);
+      }
+
       section {
         position: relative;
         text-align: center;
@@ -76,7 +107,7 @@
         pointer-events: none;
       }
 
-      #landing-cta {
+      #instructions {
         color: white;
         text-align: center;
       }
@@ -169,8 +200,8 @@
 
   <body>
     <div id="subvirtual">
-      <div id="blocker" class="noselect">
-        <div id="landing-cta">
+      <div id="blocker" class="hidden noselect">
+        <div id="instructions">
           <div class="mobile-only">
             <img
               class="touch-icon"
@@ -229,6 +260,14 @@
       </div>
 
       <canvas id="renderCanvas"></canvas>
+    </div>
+
+    <div id="landing-container" class="noselect">
+      <div id="landing">
+        <div id="landing-inner">
+          <h1>Scroll To Continue</h1>
+        </div>
+      </div>
     </div>
 
     <main role="main" class="Loop js-loop hidden">

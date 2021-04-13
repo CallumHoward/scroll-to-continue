@@ -59,6 +59,21 @@ function scrollUpdate() {
 }
 
 function init() {
+  // Handle landing cover
+  const landingContainer = document.getElementById("landing-container");
+  const onScrollLanding = () => {
+    const scrollBottom = Math.round(
+      landingContainer.scrollTop +
+        landingContainer.getBoundingClientRect().height
+    );
+    if (scrollBottom === landingContainer.scrollHeight) {
+      landingContainer.style.display = "none";
+      landingContainer.removeEventListener("scroll", onScrollLanding);
+    }
+  }
+  landingContainer.addEventListener("scroll", onScrollLanding);
+
+  // When images load
   Promise.all(
     Array.from(document.images).map((img) => {
       if (img.complete) return Promise.resolve(img.naturalHeight !== 0);

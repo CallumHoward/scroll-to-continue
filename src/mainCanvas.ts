@@ -528,6 +528,7 @@ const initBabylonCanvas = async () => {
     setupPipeline(scene, camera);
 
     context.classList.add("undisplay");
+    blocker.classList.remove("hidden");
   };
 
   // await createIntroScene(

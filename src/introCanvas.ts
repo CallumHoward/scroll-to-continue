@@ -456,4 +456,6 @@ export const createIntroScene = async (
   init();
   watchViewport(updateValues);
   context.addEventListener("scroll", eventOnScroll, false);
+
+  return gui;
 };

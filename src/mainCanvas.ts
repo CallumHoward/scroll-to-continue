@@ -1,4 +1,5 @@
 import * as BABYLON from "babylonjs";
+import * as GUI from "babylonjs-gui";
 import "babylonjs-loaders";
 
 import { getGhostMaterial } from "./ghost-material";
@@ -9,17 +10,29 @@ import { initPointerLock } from "./pointer-lock";
 const canvas = document.getElementById("renderCanvas") as HTMLCanvasElement; // Get the canvas element
 const blocker = document.getElementById("blocker") as HTMLDivElement;
 const engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
+let gui;
 
 const ANIM_NAMES = ["fb", "insta", "tinder"];
 const ANIM_LEN = 615;
 const FPS = 36;
 const FIRST_INSTANCE = 13;
 
+let sceneLoadTime = Date.now();
+let firstMoveTime = Date.now();
+let fifthStageTime = Date.now();
+let secondInstanceTime = 0;
+let initialPosition = new BABYLON.Vector3(12, 1.3, 3.52);
+let isSecondInstanceShown = false;
+let isThirdStage = false;
+let isFourthStage = false;
+let isFifthStage = false;
+let isSixthStage = false;
+
 const setupCamera = (scene: BABYLON.Scene) => {
   // This creates and positions a free camera (non-mesh)
   const camera = new BABYLON.UniversalCamera(
     "Camera",
-    new BABYLON.Vector3(12, 1.3, 3.52),
+    initialPosition.clone(),
     scene
   );
   camera.layerMask = 2;
@@ -257,9 +270,7 @@ const setupBodyInstances = async (scene: BABYLON.Scene) => {
     name: string
   ) => {
     // Clone outer phone frame (static)
-    const phoneInstanceEmpty = new BABYLON.Mesh(
-      `phoneInstanceEmpty_${index}_${name}`
-    );
+    const phoneInstanceEmpty = new BABYLON.Mesh(`phoneInstanceEmpty_${index}`);
     phoneInstanceEmpty.setParent(phoneInstancesEmpty);
 
     const phoneInstance = (phone as BABYLON.Mesh).clone(`phone_${index}`);
@@ -467,21 +478,6 @@ const createMainScene = async (scene: BABYLON.Scene) => {
   // pbrMat.metallic = 1.0;
   // boxMesh.material = pbrMat;
 
-  // const s2Text = gltf.meshes.find((e) => e.id === "S2Text");
-  // const mat = new BABYLON.StandardMaterial("titleCard", scene);
-  // mat.diffuseTexture = new BABYLON.Texture(
-  //   "assets/img/titlecard.svg",
-  //   scene,
-  //   false,
-  //   false
-  // );
-  // mat.diffuseTexture.hasAlpha = true;
-  // mat.diffuseTexture.uScale = 1.0;
-  // mat.diffuseTexture.vScale = -1.0;
-  // s2Text.material = mat;
-
-  // setupText(scene);
-
   // const floorMesh = gltf.meshes.find((e) => e.id === "floor");
   // const reflection = setupReflection(scene, floorMesh, []);
   // const updateReflection = (refMeshes: BABYLON.Mesh[]) => {
@@ -513,6 +509,114 @@ const createMainScene = async (scene: BABYLON.Scene) => {
   return camera;
 };
 
+const whiteBlocker = new GUI.Rectangle();
+const fadeOutToWhite = (scene: BABYLON.Scene) => {
+  whiteBlocker.alpha = 0;
+  whiteBlocker.background = "White";
+  whiteBlocker.zIndex = 999;
+  gui.addControl(whiteBlocker);
+
+  const fadeOut = () => {
+    whiteBlocker.alpha += 0.005;
+    if (whiteBlocker.alpha > 1) {
+      scene.unregisterBeforeRender(fadeOut);
+    }
+  };
+  scene.registerBeforeRender(fadeOut);
+};
+
+const setupSequencing = (scene: BABYLON.Scene, camera: BABYLON.Camera) => {
+  scene.registerBeforeRender(() => {
+    // @ts-ignore
+    let rotation = camera.rotation.y % (2 * Math.PI);
+    if (rotation < 0) {
+      rotation += 2 * Math.PI;
+    }
+    const bodyInsances = scene
+      .getNodeByName("bodyInstancesEmpty")
+      .getChildren();
+
+    if (
+      firstMoveTime === sceneLoadTime &&
+      Math.abs(camera.position.x - initialPosition.x) > 0.1
+    ) {
+      firstMoveTime = Date.now();
+    }
+    if (
+      !isSecondInstanceShown &&
+      firstMoveTime !== sceneLoadTime &&
+      Date.now() - firstMoveTime > 10 * 1000
+    ) {
+      if (3.38 < rotation && rotation < 6 && camera.position.x < 13) {
+        // show second instance
+        console.log("show second instance");
+        isSecondInstanceShown = true;
+        secondInstanceTime = Date.now();
+        scene.getMeshByName("body_15").isVisible = true;
+        scene.getNodeByName("phoneInstanceEmpty_13").setEnabled(true);
+      }
+    }
+
+    if (
+      isSecondInstanceShown &&
+      !isThirdStage &&
+      Date.now() - secondInstanceTime > 12 * 1000
+    ) {
+      if (
+        0 < rotation &&
+        rotation < 3.83 &&
+        11.5 < camera.position.x &&
+        camera.position.x < 15
+      ) {
+        console.log("show left instances");
+        isThirdStage = true;
+        for (let i = 0; i < bodyInsances.length; i++) {
+          if (i % 2 !== 0) {
+            (bodyInsances[i] as BABYLON.Mesh).isVisible = true;
+            scene.getNodeByName(`phoneInstanceEmpty_${i}`).setEnabled(true);
+          }
+        }
+      }
+    }
+
+    if (isThirdStage && !isFourthStage) {
+      if ((1.48 > rotation || rotation > 5.38) && camera.position.z > 0) {
+        isFourthStage = true;
+        fifthStageTime = Date.now();
+        for (let i = 0; i < bodyInsances.length; i++) {
+          (bodyInsances[i] as BABYLON.Mesh).isVisible = true;
+          scene.getNodeByName(`phoneInstanceEmpty_${i}`).setEnabled(true);
+        }
+      }
+    }
+
+    if (
+      isFourthStage &&
+      !isFifthStage &&
+      Date.now() - fifthStageTime > 10 * 1000
+    ) {
+      isFifthStage = true;
+      console.log("LOG isFifthStage: ", isFifthStage);
+      scene.getNodeByName("dataStreamEmpty").setEnabled(true);
+      setupParticleSystem(scene);
+    }
+
+    if (isFifthStage && !isSixthStage && camera.position.x < 0.5) {
+      isSixthStage = true;
+      blocker.classList.add("hidden");
+      camera.inputs.clear();
+      (camera as BABYLON.UniversalCamera).setTarget(
+        scene.getMeshByName("coreSphere").position
+      );
+    }
+
+    if (isSixthStage && camera.fov > 0.1) {
+      camera.fov -= 0.002;
+      fadeOutToWhite(scene);
+    }
+  });
+};
+
 const initBabylonCanvas = async () => {
   const scene = new BABYLON.Scene(engine);
   scene.debugLayer.show();
@@ -540,22 +644,25 @@ const initBabylonCanvas = async () => {
     await setupBodyInstances(scene);
     // setupParticleSystem(scene);
     setupPipeline(scene, camera);
+    setupSequencing(scene, camera);
 
     context.classList.add("undisplay");
     blocker.classList.remove("hidden");
+    sceneLoadTime = Date.now();
+    firstMoveTime = sceneLoadTime;
   };
 
-  // await createIntroScene(
-  //   context,
-  //   cardDivs,
-  //   images,
-  //   textDivs,
-  //   scene,
-  //   engine,
-  //   canvas,
-  //   nextScene
-  // );
-  nextScene();
+  gui = await createIntroScene(
+    context,
+    cardDivs,
+    images,
+    textDivs,
+    scene,
+    engine,
+    canvas,
+    nextScene
+  );
+  // nextScene();
 
   engine.runRenderLoop(() => {
     scene.render();
